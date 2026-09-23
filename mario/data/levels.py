@@ -97,7 +97,8 @@ def level_1_1() -> dict:
     b.coins([21, 22, 23], 7).coins([44, 45, 46], 9).coins([30, 31, 32], 10)
     b.coins([64, 65, 66], 9)
     # 敌人
-    b.add("goomba", 24, 12).add("goomba", 33, 12).add("goomba", 34, 12)
+    b.add("biddybud", 33, 12).add("biddybud", 34, 12, dir=1)   # NSMBW 甲虫小队
+    b.add("goomba", 24, 12).add("goomba", 27, 12)
     b.add("goomba", 42, 12).add("koopa", 40, 12, dir=-1)   # 朝远离检查点的方向巡逻
     b.add("goomba", 55, 12).add("goomba", 56, 12)
     b.add("red_koopa", 74, 12).add("piranha", 57, 9, phase=0.4)
@@ -144,6 +145,7 @@ def level_1_2() -> dict:
     b.coins([60, 61], 11)
     b.put(10, 8, "!")                          # 火花块
     b.put(12, 6, "m")                          # 迷你蘑菇块
+    b.put(56, 4, "P")                          # 螺旋桨块（井口平台上方）
     b.coins([10, 11, 12, 13, 14], 8).coins([30, 31, 32, 33, 34], 7)
     b.add("goomba", 16, 12).add("buzzy", 26, 12).add("buzzy", 27, 12)
     b.add("spiny", 46, 12, dir=1).add("red_koopa", 50, 12, dir=1)   # 背对检查点
@@ -181,6 +183,8 @@ def level_1_3() -> dict:
     b.put(32, 5, "?")
     b.put(33, 5, "!")
     b.put(55, 5, "f")   # 冰之花块
+    b.put(21, 5, "Q")   # 企鹅装块（水关绝配）
+    b.add("goombrat", 20, 9, dir=-1)           # NSMBW 栗子怪
     b.add("starcoin", 24, 5, idx=0)            # 水下高处
     b.add("starcoin", 48, 5, idx=1)
     b.add("starcoin", 76, 5, idx=2)
@@ -207,6 +211,8 @@ def level_castle() -> dict:
     b.add("platform", 24, 10, to=(4, 0), period=3.6)   # 跨尖刺坑
     b.add("spiny", 20, 12).add("buzzy", 34, 12)
     b.add("spiny", 46, 12, dir=1)   # 检查点(36)在左，让它朝右走
+    b.add("drybones", 30, 12, dir=1)           # 骷髅龟：踩散会复活
+    b.add("grrrol", 34, 12, dir=1)             # 滚石球：无敌路障
     b.add("goomba", 12, 12).add("goomba", 13, 12)
     b.add("bowser", 58, 12)                    # Boss
     b.add("checkpoint", 36, 12)

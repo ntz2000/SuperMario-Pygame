@@ -307,6 +307,135 @@ class Cheep(Enemy):
             self.kill()
 
 
+class Biddybud(Enemy):
+    """NSMBW 甲虫：直线行走（5 帧动画），可踩扁，成群出现是它的特色。"""
+
+    art = "enemy/biddybud"
+    w, h = 12, 11
+    speed = 0.62
+
+
+class Goombrat(Enemy):
+    """NSMBW 栗子怪：像 Goomba，但悬崖边会自己掉头。"""
+
+    art = "enemy/goombrat"
+    w, h = 12, 12
+
+    def update(self, world):
+        before = self.body.x
+        super().update(world)
+        if self.state == "walk" and self.awake and not self.squashed and not self._grounded():
+            self.body.x = before
+            self.dir *= -1
+
+    def _grounded(self) -> bool:
+        ahead = pygame.Rect(round(self.body.x - 6 + self.dir * 8), round(self.body.y), 12, 3)
+        return any(k == "solid" or k == "one_way"
+                   for _c, k in self.world.tilemap.solid_cells(ahead))
+
+
+class Grrrol(Enemy):
+    """NSMBW 滚石球：带刺滚动的巨石，踩不得打不得，只能躲。"""
+
+    art = "enemy/grrrol"
+    w, h = 13, 13
+    z = 13
+    speed = 1.1
+    stompable = False
+    score = 0
+
+    def stomp(self, world, by):
+        return False          # 踩上去只会伤到自己
+
+    def hurt(self, world, by=None):
+        pass                  # 火球/星星/龟壳全都免疫——它就是无敌的路障
+
+    def update(self, world):
+        if not self.awake:
+            if world.camera.view_rect.inflate(48, 0).colliderect(self.rect):
+                self.awake = True
+            return
+        self.t += 1 / 60.0
+        if self.squashed > 0:
+            self.squashed -= 1 / 60.0
+            return
+        self.body.vx = self.dir * self.speed
+        if move_x(self.body, world.tilemap):
+            self.dir = -1 if self.body.on_wall > 0 else 1
+            world.sfx("bump")
+        self.body.vy = min(6.0, self.body.vy + 0.30)
+        move_y(self.body, world.tilemap)
+        if self.body.y > world.tilemap.pixel_size[1] + 40:
+            self.kill()
+
+    def draw(self, target, cam):
+        surf = self.frame_surf()
+        if self.flip:
+            surf = pygame.transform.flip(surf, True, False)
+        # 滚动感：按行进距离旋转
+        angle = (self.t * 520 * self.dir) % 360
+        surf = pygame.transform.rotate(surf, -angle)
+        x, y = cam.to_screen(self.body.x - surf.get_width() / 2,
+                             self.body.y - surf.get_height())
+        target.blit(surf, (x, y))
+
+
+class DryBones(Enemy):
+    """NSMBW 骷髅龟：踩散架 4 秒后重新拼起来；只有火球/星星/龟壳能真正干掉。"""
+
+    art = "enemy/drybones"
+    w, h = 13, 16
+    speed = 0.45
+    shell = False
+    score = 200
+
+    def __init__(self, world, x, y, dir=-1, **kw):
+        super().__init__(world, x, y, dir=dir, **kw)
+        self.collapsed = 0.0    # 散架倒计时
+
+    def stomp(self, world, by):
+        if self.collapsed > 0:
+            return False        # 已经散了，再踩只是踩灰
+        self.collapsed = 4.0
+        self.body.vx = 0.0
+        world.sfx("stomp")
+        world.add_score(100, self.body.center)
+        return True
+
+    def hurt(self, world, by=None):
+        # 火球/星星/滑壳才能击杀
+        self.alive = False
+        self.removed = True
+        world.fx("hit", self.body.center)
+        world.add_score(self.score, self.body.center)
+        world.sfx("hit")
+
+    def update(self, world):
+        if self.collapsed > 0:
+            self.collapsed -= 1 / 60.0
+            self.t += 1 / 60.0
+            if self.collapsed <= 0:
+                self.collapsed = 0.0
+                world.fx("pop", self.body.center)
+            return
+        super().update(world)
+
+    def draw(self, target, cam):
+        if self.collapsed > 0:
+            # 散架：贴图压扁贴地 + 快苏醒时抖动
+            surf = self.frame_surf()
+            if self.flip:
+                surf = pygame.transform.flip(surf, True, False)
+            flat = pygame.transform.scale(surf, (surf.get_width(),
+                                                 max(4, int(surf.get_height() * 0.22))))
+            x, y = cam.to_screen(self.body.x - flat.get_width() / 2,
+                                 self.body.y - flat.get_height())
+            jit = 1 if (self.collapsed < 1.0 and int(self.collapsed * 24) % 2) else 0
+            target.blit(flat, (x + jit, y))
+            return
+        super().draw(target, cam)
+
+
 class Flame(Actor):
     """Bowser 吐出的火苗：水平飘行，碰到玩家造成伤害。"""
 

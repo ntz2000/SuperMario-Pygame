@@ -241,6 +241,34 @@ def iceball(frame: int = 0):
 register("fx/iceball", iceball, frames=2, finish={"outline": 0.8})
 register("item/star", star, frames=2, finish={"outline": 1.0})
 register("item/spring", spring, frames=2, finish={"outline": 1.0})
+
+
+def propeller_mushroom():
+    """NSMBW 螺旋桨蘑菇：橙黄蘑菇 + 顶部旋翼。"""
+    c = Canvas((14, 15))
+    c.pie((0, 3, 14, 15), 180, 360, hexc("#f2a33a"))
+    c.rrect((1, 9, 13, 15), 3, CREAM)
+    for x, y, r in ((3, 6, 2.0), (9, 5, 2.3)):
+        c.ellipse((x - r, y - r, x + r, y + r), hexc("#ffe9c0"))
+    # 旋翼
+    c.line([(2, 3), (12, 3)], 2.0, hexc("#8a8a9c"))
+    c.ellipse((5, 1, 9, 4), hexc("#c9c9d6"))
+    return c
+
+
+def penguin_suit():
+    """NSMBW 企鹅装：深蓝身体 + 白肚 + 黄喙。"""
+    c = Canvas((14, 15))
+    c.ellipse((1, 1, 13, 14), hexc("#27436e"))
+    c.ellipse((3, 5, 11, 13), hexc("#f0f4f8"))       # 白肚
+    c.ellipse((4, 1.6, 7, 4.2), hexc("#f2c53a"))     # 喙
+    c.ellipse((8, 2.2, 10, 3.8), hexc("#f0f4f8"))    # 眼区
+    c.ellipse((1.5, 9, 4.5, 13), hexc("#141d30"))    # 翅膀
+    return c
+
+
+register("item/propeller", propeller_mushroom, finish={"outline": 1.0})
+register("item/penguin", penguin_suit, finish={"outline": 1.0})
 register("fx/coin", coin, frames=4, finish={"outline": 1.0})
 
 

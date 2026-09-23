@@ -51,6 +51,8 @@ class Player(Actor):
         self._bubble_ground = 0.0
         self._bubble_t = 0.0
         self.pending_form = ""  # 头顶空间不足时排队等长（防变大穿模）
+        self.prop_fuel = 0.0    # 螺旋桨燃料（propeller 形态）
+        self.sliding = False    # 企鹅冰滑状态
         self.squash_t = 0.0     # 落地压扁/起跳拉伸计时（squash&stretch 让动作有生命感）
 
     def start_bubble(self, ground_y: float):
@@ -71,10 +73,12 @@ class Player(Actor):
     def height(self) -> int:
         return {"mini": TUNE.mini_h, "small": TUNE.small_h,
                 "super": TUNE.super_h, "fire": TUNE.super_h, "ice": TUNE.super_h,
+                "propeller": TUNE.super_h, "penguin": TUNE.super_h,
                 "mega": TUNE.mega_h}[self.form]
 
     def set_form(self, form: str, world=None):
-        if form not in ("mini", "small", "super", "fire", "ice", "mega"):
+        if form not in ("mini", "small", "super", "fire", "ice",
+                        "propeller", "penguin", "mega"):
             form = "small"
         # 长高前检查头顶空间（经典行为：顶不够就先不长，留 pending 等有空间）。
         # 防止变大瞬间嵌入天花板瓦片 → 横移被卡死/视觉穿模。
@@ -93,6 +97,7 @@ class Player(Actor):
     def _form_h(self, form: str) -> int:
         return {"mini": TUNE.mini_h, "small": TUNE.small_h,
                 "super": TUNE.super_h, "fire": TUNE.super_h, "ice": TUNE.super_h,
+                "propeller": TUNE.super_h, "penguin": TUNE.super_h,
                 "mega": TUNE.mega_h}.get(form, TUNE.small_h)
 
     def _can_fit(self, form: str) -> bool:
@@ -114,7 +119,7 @@ class Player(Actor):
             world.sfx("power-up")
 
     def shrink(self, world):
-        if self.form in ("super", "fire", "ice"):
+        if self.form in ("super", "fire", "ice", "propeller", "penguin"):
             self.set_form("small")
             self.invuln = 1.4
             world.sfx("shrink")
@@ -250,6 +255,21 @@ class Player(Actor):
     # -- 移动 ------------------------------------------------------------------------------
     def _horizon(self, inp, world):
         b = self.body
+        # 企鹅冰滑：地面高速冲刺（≥跑速 95%）→ 肚皮滑行，加速+难转向+撞飞敌人
+        if self.form == "penguin" and b.on_ground and abs(b.vx) > TUNE.run_max * 0.95:
+            if not self.sliding:
+                self.sliding = True
+                world.sfx("spin")
+        elif self.sliding and (not b.on_ground or abs(b.vx) < TUNE.run_max * 0.5):
+            self.sliding = False
+        if self.sliding:
+            b.vx = max(TUNE.run_max * 1.35, abs(b.vx)) * (1 if b.vx >= 0 else -1)
+            if abs(b.vx) < TUNE.run_max * 1.35:
+                b.vx = TUNE.run_max * 1.35 * (1 if b.vx >= 0 else -1)
+            if int(self.t * 30) % 3 == 0:
+                world.fx("dust", (b.x - (1 if b.vx > 0 else -1) * 5, b.y - 1))
+            self.facing = 1 if b.vx > 0 else -1
+            return   # 滑行中不受普通方向控制（这就是"冰滑"的代价与爽点）
         crawling = inp.held("down") and b.on_ground
         axis = 0 if self.climbing else inp.axis_x()
         if crawling and abs(b.vx) < 0.6:
@@ -283,11 +303,21 @@ class Player(Actor):
         b = self.body
         ground = b.on_ground or (was_grounded and self._coyote > 0)
         jump_scale = {"mini": 1.12, "mega": 0.9}.get(self.form, 1.0)
+        # 螺旋桨燃料：地面回满，空中消耗
+        if b.on_ground:
+            self.prop_fuel = 1.2
         if inp.buffered("jump", TUNE.jump_buffer):
             if self.climbing:
                 b.vy = -2.6
                 self.climbing = False
                 world.sfx("jump")
+            elif self.form == "propeller" and not ground and self.prop_fuel > 0.05:
+                # 螺旋桨起飞：空中再按跳=垂直升空（NSMBW 同款）
+                b.vy = -4.2
+                self.prop_fuel -= 0.22
+                self.spinning = True
+                world.sfx("spin")
+                world.fx("dust", (b.x, b.y))
             elif ground:
                 # 跑动起跳加成（NSMB：跑跳比站跳更高更远，助跑有意义）
                 run_boost = TUNE.run_jump_bonus if abs(b.vx) > TUNE.walk_max else 1.0
@@ -304,12 +334,20 @@ class Player(Actor):
                 self.spinning = False
                 world.sfx("jump")
                 world.fx("dust", (b.x - self._wall_dir * 5, b.y - b.h * 0.5))
-        if inp.released("jump") and b.vy < -1.0 and not self.in_water:
+        elif self.form == "propeller" and not ground and inp.held("jump") \
+                and self.prop_fuel > 0:
+            # 按住跳跃：螺旋桨持续消耗燃料缓缓上升
+            b.vy = min(b.vy, -2.6)
+            self.prop_fuel -= 1 / 60.0
+            self.spinning = True
+        if inp.released("jump") and b.vy < -1.0 and not self.in_water \
+                and self.form != "propeller":
             b.vy *= TUNE.gravity_release
         if self.climbing:
             b.vy = inp.axis_y() * 1.35
         if self.in_water and inp.pressed("jump"):
-            b.vy = -2.55
+            # 企鹅装水中如鱼（NSMBW：划水更强）
+            b.vy = -3.4 if self.form == "penguin" else -2.55
             world.sfx("swim")
         # 旋转跳（空中按 spin）与下砸（空中 下+跳跃）
         if inp.pressed("spin") and not b.on_ground and not self.in_water:
@@ -323,6 +361,8 @@ class Player(Actor):
             self.spinning = False
             self.pound = False
             self.diving = inp.held("down") and abs(b.vx) > TUNE.walk_max * 0.85
+        if self.form != "penguin":
+            self.sliding = False
         if inp.pressed("action"):
             world.action_pressed(self)
         # 重力：只要不在爬梯就始终施加（站台上时每帧 0.5px 下压→重新落地）。
@@ -335,12 +375,20 @@ class Player(Actor):
             elif b.vy > 0:
                 g *= TUNE.gravity_fall
             if self.in_water:
-                b.vy = min(0.8, b.vy + TUNE.gravity * 0.34 * 0.5)  # 水中缓慢下沉
+                # 企鹅装水中下沉更慢（浮力）
+                sink = 0.17 if self.form == "penguin" else 0.5
+                b.vy = min(0.8, b.vy + TUNE.gravity * 0.34 * sink)
             else:
                 if self.pound:
                     g = TUNE.gravity * 2.1
                 cap = TUNE.max_fall
                 b.vy = min(cap, b.vy + g)
+                # 螺旋桨缓降：下落中按住跳=旋翼减速漂浮（燃料耗尽仍有一点缓冲）
+                if self.form == "propeller" and b.vy > 1.3 and inp.held("jump"):
+                    b.vy = 1.3
+                    self.spinning = self.prop_fuel > 0
+                    if int(self.t * 30) % 4 == 0:
+                        world.fx("dust", (b.x, b.y))
 
     def _wall_slide_check(self, world):
         """贴墙下滑检测：空中、下落、朝着墙按方向键才成立。"""
@@ -370,7 +418,9 @@ class Player(Actor):
         # 动画速率随速度（NSMB 手感：18 帧 walk 在跑动时 ~0.6s 一循环）
         def _pace():
             self.fps = min(34.0, 15.0 + abs(b.vx) * 8.0)
-        if self.climbing:
+        if self.sliding:
+            self.set_anim("dive")     # 企鹅肚皮滑行姿势
+        elif self.climbing:
             self.set_anim("swim")
         elif self.in_water:
             self.set_anim("swim")

@@ -1154,5 +1154,77 @@
    ]
   ],
   "fit_h": 26
+ },
+ "enemy/biddybud": {
+  "sheet": "nsmbw/biddybud_strip.png",
+  "rects": [
+   [
+    0,
+    0,
+    26,
+    23
+   ],
+   [
+    26,
+    0,
+    26,
+    23
+   ],
+   [
+    52,
+    0,
+    26,
+    23
+   ],
+   [
+    78,
+    0,
+    26,
+    23
+   ],
+   [
+    104,
+    0,
+    26,
+    23
+   ]
+  ],
+  "fit_h": 12
+ },
+ "enemy/grrrol": {
+  "sheet": "nsmbw/grrrol.png",
+  "rects": [
+   [
+    0,
+    0,
+    61,
+    61
+   ]
+  ],
+  "fit_h": 14
+ },
+ "enemy/drybones": {
+  "sheet": "nsmbw/drybones.png",
+  "rects": [
+   [
+    0,
+    0,
+    69,
+    99
+   ]
+  ],
+  "fit_h": 17
+ },
+ "enemy/goombrat": {
+  "sheet": "nsmbw/goombrat.png",
+  "rects": [
+   [
+    0,
+    0,
+    28,
+    31
+   ]
+  ],
+  "fit_h": 13
  }
 }

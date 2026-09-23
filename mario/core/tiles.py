@@ -134,6 +134,8 @@ def default_table() -> TileTable:
     add(Tile("*", "star block", "tile/question", bumpable=True, item="star"))
     add(Tile("m", "mini block", "tile/question", bumpable=True, item="mini"))
     add(Tile("g", "mega block", "tile/question", bumpable=True, item="mega"))
+    add(Tile("P", "propeller block", "tile/question", bumpable=True, item="propeller"))
+    add(Tile("Q", "penguin block", "tile/question", bumpable=True, item="penguin"))
     add(Tile("H", "hidden block", "", kind="", bumpable=True, hidden=True, item="coin"))
     add(Tile("N", "note", "tile/note", bumpable=True))
     add(Tile("X", "used block", "tile/used"))

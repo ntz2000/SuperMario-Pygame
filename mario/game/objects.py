@@ -155,6 +155,37 @@ class Mini(PowerUp):
         world.hint("迷你马里奥！更轻快，跳得更高", key="mini")
 
 
+class PropellerMushroom(PowerUp):
+    """NSMBW 螺旋桨蘑菇：按住跳跃垂直起飞，空中再按可悬浮缓降。"""
+
+    art = "item/propeller"
+    w, h = 13, 14
+
+    def apply(self, world, player):
+        if player.form == "mini":
+            player.set_form("small")
+        player.set_form("propeller")
+        player.prop_fuel = 1.2
+        world.sfx("power-up")
+        world.hint("螺旋桨！空中按住 跳 垂直升空/缓降", key="propeller")
+        world.add_score(1000, self.body.center)
+
+
+class PenguinSuit(PowerUp):
+    """NSMBW 企鹅装：水中如飞 + 冰面滑行 + 冰球。"""
+
+    art = "item/penguin"
+    w, h = 13, 14
+
+    def apply(self, world, player):
+        if player.form == "mini":
+            player.set_form("small")
+        player.set_form("penguin")
+        world.sfx("power-up")
+        world.hint("企鹅装！水中更灵活，高速冲刺=冰滑", key="penguin")
+        world.add_score(1000, self.body.center)
+
+
 class BlockCoin(Actor):
     """从方块里顶出的金币：弹起旋转后消失，纯粹是视觉。"""
 

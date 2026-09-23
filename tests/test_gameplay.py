@@ -392,6 +392,63 @@ class TestFlow:
             app.input.advance()
         assert level.tilemap.at(tx, 12) == "", "下砸应砸碎脚下的碎砖"
 
+    def test_new_enemies_v6(self, app, level):
+        """NSMBW 新敌人：Biddybud 可踩 / Grrrol 无敌 / DryBones 散架复活。"""
+        from mario.game.enemies import Biddybud, Grrrol, DryBones
+
+        b = level.spawn(Biddybud, 50 * TILE, 13 * TILE)
+        b.awake = True
+        p = level.player
+        p.body.x = b.body.x; p.body.y = b.body.y - 10; p.body.vy = 2
+        level._collisions()
+        assert b.squashed > 0, "Biddybud 应可踩扁"
+
+        r = level.spawn(Grrrol, 60 * TILE, 13 * TILE)
+        r.awake = True
+        r.hurt(level, None)
+        p.star = 99
+        p.body.x = r.body.x; p.body.y = r.body.y - 10; p.body.vy = 2
+        level._collisions()
+        assert r.alive, "Grrrol 星星也踩不死"
+        p.star = 0
+
+        d = level.spawn(DryBones, 70 * TILE, 13 * TILE)
+        d.awake = True
+        p.body.x = d.body.x; p.body.y = d.body.y - 10; p.body.vy = 2
+        level._collisions()
+        assert d.collapsed > 0, "DryBones 应散架"
+        d.collapsed = 0.05
+        for _ in range(10):
+            d.update(level)
+        assert d.alive and d.collapsed == 0, "散架后应复活"
+        d.hurt(level, None)
+        assert not d.alive, "火球可击杀"
+
+    def test_propeller_and_penguin_v6(self, app, level):
+        """NSMBW 招牌道具：螺旋桨空中起飞 + 企鹅冰球/滑行。"""
+        from mario.game.objects import PropellerMushroom, PenguinSuit
+
+        level.spawn(PropellerMushroom, level.player.body.x, level.player.body.y - 4)
+        run(level, 4)
+        assert level.player.form == "propeller"
+        p = level.player
+        p.body.y = 13 * TILE - 60
+        p.body.vy = 0
+        app.input.press("jump")
+        y0 = p.body.y
+        for _ in range(20):
+            level.update(); app.input.advance()
+        assert y0 - p.body.y > 15, "螺旋桨应空中上升"
+        app.input.release("jump")
+
+        level.spawn(PenguinSuit, p.body.x, p.body.y - 4)
+        run(level, 4)
+        assert level.player.form == "penguin"
+        app.input.press("action")
+        for _ in range(30):
+            level.update(); app.input.advance()
+        assert any(type(a).__name__ == "IceBall" for a in level.actors), "企鹅应扔冰球"
+
     def test_flag_finish(self, app, level):
         from mario.game.objects import GoalFlag
 

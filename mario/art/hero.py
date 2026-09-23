@@ -115,6 +115,10 @@ FORMS = {
     "super": dict(h=22, shirt=RED, over=BLUE),
     "fire": dict(h=22, shirt=hexc("#f2f0ea"), over=RED),
     "ice": dict(h=22, shirt=hexc("#f0f6ff"), over=hexc("#3a7fd0")),
+    "propeller": dict(h=22, shirt=hexc("#f2a33a"), over=hexc("#f2f0ea"),
+                      cap=hexc("#e8c04a")),
+    "penguin": dict(h=22, shirt=hexc("#27436e"), over=hexc("#141d30"),
+                    cap=hexc("#1a2540")),
     "mini": dict(h=10, shirt=RED, over=BLUE),
     "mega": dict(h=26, shirt=hexc("#e8d44a"), over=hexc("#c9442a")),
 }

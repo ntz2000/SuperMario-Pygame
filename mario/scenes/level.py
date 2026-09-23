@@ -365,7 +365,7 @@ class LevelScene(Scene):
             self.spawn(Fireball, player.body.x + player.body.facing * 6,
                        player.body.y - player.body.h * 0.6, dir=player.body.facing)
             self.sfx("throw")
-        elif player.form == "ice":
+        elif player.form in ("ice", "penguin"):
             from ..game.objects import IceBall
             self.spawn(IceBall, player.body.x + player.body.facing * 6,
                        player.body.y - player.body.h * 0.6, dir=player.body.facing)
@@ -642,9 +642,9 @@ class LevelScene(Scene):
             if p.dying:
                 continue
             landing = (p.body.vy > 0.5 and p.rect.bottom - a.rect.top < 9)
-            if p.star > 0 or p.mega_t > 0:
+            if p.star > 0 or p.mega_t > 0 or p.sliding:
                 if hasattr(a, "hurt"):
-                    a.hurt(self, p)
+                    a.hurt(self, p)      # 企鹅肚皮滑行同样撞飞敌人
                 continue
             if hasattr(a, "stomp") and (landing or getattr(a, "state", "") in
                                        ("shell", "frozen")):
