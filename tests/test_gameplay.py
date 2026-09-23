@@ -449,6 +449,25 @@ class TestFlow:
             level.update(); app.input.advance()
         assert any(type(a).__name__ == "IceBall" for a in level.actors), "企鹅应扔冰球"
 
+    def test_ice_slippery_v7(self, app):
+        """世界2 冰面：松开方向后继续滑行（摩擦 0.15）。"""
+        from mario.data.levels import LEVELS as L
+
+        scene = LevelScene(app, L["2-2"])
+        scene.on_enter(id="2-2")
+        for a in list(scene.actors):
+            if a is not scene.player:
+                a.kill()
+        p = scene.player
+        app.input.press("right", "run")
+        for _ in range(40):
+            scene.update(); app.input.advance()
+        assert p.body.vx > 1.5
+        app.input.release("right", "run")
+        for _ in range(40):
+            scene.update(); app.input.advance()
+        assert p.body.vx > 0.5, "冰面松开后应继续滑行"
+
     def test_flag_finish(self, app, level):
         from mario.game.objects import GoalFlag
 

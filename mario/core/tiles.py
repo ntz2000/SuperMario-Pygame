@@ -49,6 +49,7 @@ class Tile:
     body: str = ""
     lip: str = ""
     grit: str = ""
+    friction: float = 1.0   # 地面摩擦系数：1=正常，0.15=冰面（打滑）
 
     @property
     def solid(self) -> bool:
@@ -100,7 +101,7 @@ class TileTable:
         base = self.tiles[code]
         # 真实瓦片主题前缀（NSMB 官方 tileset，见 mario/assets/atlas.json）
         REAL = {"overworld": "ow", "underground": "ug", "castle": "castle",
-                "water": "water"}
+                "water": "water", "snow": "snow"}
         if theme in REAL and base.name in ("ground", "rock"):
             real = f"tile/{REAL[theme]}-{base.name}"
             try:
@@ -144,7 +145,7 @@ def default_table() -> TileTable:
     add(Tile("=", "platform", "tile/platform", kind=ONE_WAY))
     add(Tile("l", "ladder", "tile/ladder", kind="", climbable=True))
     add(Tile("S", "spike", "tile/spike"))
-    add(Tile("I", "ice", "tile/ice"))
+    add(Tile("I", "ice", "tile/ice", friction=0.15))
     add(Tile("M", "metal", "tile/metal"))
     add(Tile("W", "wood crate", "tile/crate", bumpable=True, destructible=True))
     add(Tile("T", "switch block (off)", "tile/switch", bumpable=True))
@@ -173,8 +174,14 @@ SKY = Theme("sky", sky=("#8fd8ff", "#eafaff"), hill="#cfe9ff", hill_d="#a9cbe8",
             cloud="#ffffff", bush="#dff0ff", ground=("#dfeaf8", "#f6fbff", "#b8cde4"),
             rock=("#c4d6ec", "#eaf4ff", "#a8bcd6"), brick=("#cfe0f2", "#f0f8ff", "#a4bcd8"),
             platform=("#eaf4ff", "#ffffff", "#b8cde4"), music="sky")
+SNOW = Theme("snow", sky=("#a8c8e8", "#e8f2fa"), hill="#d8e8f4", hill_d="#b0cde4",
+             cloud="#ffffff", bush="#cfe0ee",
+             ground=("#b09684", "#f0f6fa", "#8a7264"),
+             rock=("#98a4b4", "#d8e8f0", "#74849a"),
+             brick=("#a09098", "#e0e8ee", "#807078"),
+             platform=("#b8c4d4", "#f0f6fa", "#8a96a8"), music="sky")
 WATER = Theme("water", sky=("#0f4a7a", "#1c7fc4"), hill="#1a5f96", hill_d="#124468",
               cloud="#bfe6ff", bush="#2a8fd0", ground=("#1f6ea8", "#54b8e8", "#154a74"),
               rock=("#1a5580", "#2f7fb0", "#123c5c"), brick=("#1f6ea8", "#4a9fd0", "#154a74"),
               platform=("#2f7fb0", "#8fd8ff", "#154a74"), music="water")
-THEMES = (OVERWORLD, UNDERGROUND, CASTLE, SKY, WATER)
+THEMES = (OVERWORLD, UNDERGROUND, CASTLE, SKY, WATER, SNOW)

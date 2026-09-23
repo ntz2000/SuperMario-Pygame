@@ -470,9 +470,9 @@ class Bowser(Enemy):
     score = 5000
     hp = 3
 
-    def __init__(self, world, x, y, **kw):
+    def __init__(self, world, x, y, hp=None, **kw):
         super().__init__(world, x, y, **kw)
-        self.hp = type(self).hp
+        self.hp = int(hp) if hp is not None else type(self).hp
         self.jump_t = 1.2
         self.fire_t = 2.0
         self.dead = False

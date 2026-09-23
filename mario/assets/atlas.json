@@ -1226,5 +1226,71 @@
    ]
   ],
   "fit_h": 13
+ },
+ "tile/snow-ground.top": {
+  "sheet": "tilesets_extract/17 Snow (with ice).png",
+  "rects": [
+   [
+    176,
+    32,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/snow-ground.fill": {
+  "sheet": "tilesets_extract/17 Snow (with ice).png",
+  "rects": [
+   [
+    192,
+    32,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/snow-ground.cap": {
+  "sheet": "tilesets_extract/17 Snow (with ice).png",
+  "rects": [
+   [
+    128,
+    48,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/snow-rock.top": {
+  "sheet": "tilesets_extract/17 Snow (with ice).png",
+  "rects": [
+   [
+    160,
+    48,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/snow-rock.fill": {
+  "sheet": "tilesets_extract/17 Snow (with ice).png",
+  "rects": [
+   [
+    192,
+    48,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/snow-rock.cap": {
+  "sheet": "tilesets_extract/17 Snow (with ice).png",
+  "rects": [
+   [
+    208,
+    48,
+    16,
+    16
+   ]
+  ]
  }
 }

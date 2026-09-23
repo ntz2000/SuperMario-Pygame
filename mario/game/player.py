@@ -290,11 +290,16 @@ class Player(Actor):
             step = ((TUNE.skid_decel if skid else
                      (TUNE.accel_run if running else TUNE.accel_walk))
                     * (1.0 if b.on_ground else TUNE.air_control))
+            if skid and b.on_ground:      # 冰上急刹也刹不住
+                step *= world.friction_at(b.rect.move(0, 2))
             b.vx += axis * step
             if abs(b.vx) > top:                   # 加速吃到 buff 后回落
                 b.vx *= 0.94
         else:
             f = TUNE.decel if b.on_ground else TUNE.decel * 0.35
+            if b.on_ground:
+                # 冰面打滑：松开方向后按地面摩擦滑行（脚下瓦片的 friction）
+                f *= world.friction_at(b.rect.move(0, 2))
             b.vx = 0.0 if abs(b.vx) <= f else b.vx - (f if b.vx > 0 else -f)
         if self.in_water:
             b.vx *= 0.985

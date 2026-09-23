@@ -89,6 +89,14 @@ class TileMap:
                 if code:
                     yield (tx, ty), self.table.get(code)
 
+    def friction_at(self, rect: pygame.Rect) -> float:
+        """脚下瓦片的摩擦系数（取触到的最低值=最滑的）。"""
+        best = 1.0
+        for _cell, tile in self.cells_in(rect):
+            if tile is not None and tile.solid:
+                best = min(best, getattr(tile, "friction", 1.0))
+        return best
+
     def solid_at(self, rect: pygame.Rect, one_way: bool = True) -> bool:
         """Is there anything solid in ``rect``? Handy for "is there a wall/pit ahead"."""
         for _cell, kind in self.solid_cells(rect):

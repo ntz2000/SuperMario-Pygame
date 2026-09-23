@@ -224,5 +224,96 @@ def level_castle() -> dict:
                   player=dict(x=2, y=12, form="super"))
 
 
+def level_2_1() -> dict:
+    """世界 2-1 雪原：冰面打滑路段 + 企鹅装（雪原绝配）。"""
+    b = Builder(96)
+    b.floor(0, 95)
+    b.gap(30, 32).gap(58, 59)
+    # 冰面路段（I 瓦片铺地，摩擦 0.15 打滑）
+    b.box(18, 13, 27, 14, "I")
+    b.box(40, 13, 52, 14, "I")
+    b.box(64, 13, 72, 14, "I")
+    b.stairs(84, 12, 4, up=True)
+    b.floor(84, 95)
+    # 方块
+    b.put(12, 9, "?").put(13, 9, "Q")        # 企鹅装块
+    b.put(38, 9, "!")                        # 火花
+    b.put(76, 9, "C")                        # 多币
+    b.row(44, 47, 6, "=")
+    b.pipe(20, 2).pipe(55, 3)
+    b.coins([24, 25, 26], 10).coins([45, 46], 5).coins([66, 67, 68], 9)
+    # 敌人：雪原动物（Biddybud 成群 + Goombrat 悬崖回头）
+    b.add("biddybud", 22, 12).add("biddybud", 23, 12, dir=1)
+    b.add("goombrat", 34, 12).add("goomba", 42, 12)
+    b.add("biddybud", 50, 12, dir=1).add("goombrat", 68, 12, dir=1)
+    b.add("koopa", 78, 12, dir=1)
+    b.add("starcoin", 31, 6, idx=0)
+    b.add("starcoin", 59, 5, idx=1)
+    b.add("starcoin", 88, 5, idx=2)
+    b.add("checkpoint", 46, 12)
+    b.add("flag", 92, 9)
+    return b.done(label="2-1", theme="snow", music="sky", time=320,
+                  player=dict(x=3, y=12, form="small"))
+
+
+def level_2_2() -> dict:
+    """世界 2-2 冰窟：地下 + 全冰地面 + 滚石球走廊 + 螺旋桨竖井。"""
+    b = Builder(80)
+    b.box(0, 0, 79, 2, "M")
+    b.floor(0, 79, top=13, code="I")        # 全冰地板
+    b.gap(24, 26)
+    b.box(14, 10, 18, 12, "D")
+    b.row(30, 33, 8, "=")
+    # 滚石走廊：低天花板让 Grrrol 只能贴地冲
+    b.box(40, 8, 48, 9, "D")
+    b.row(52, 56, 9, "=")
+    # 螺旋桨竖井
+    b.box(64, 5, 64, 12, "D")
+    b.box(67, 5, 67, 12, "D")
+    b.put(14, 9, "P")                        # 螺旋桨块
+    b.put(65, 9, "!")
+    b.coins([30, 31, 32], 7).coins([53, 54, 55], 7)
+    b.coins([65, 66], 11)
+    b.add("grrrol", 44, 12, dir=1)           # 冰上滚石（躲着走）
+    b.add("drybones", 20, 12, dir=1)
+    b.add("biddybud", 34, 12).add("biddybud", 35, 12, dir=1)
+    b.add("spiny", 58, 12, dir=1)
+    b.add("starcoin", 16, 7, idx=0)
+    b.add("starcoin", 66, 8, idx=1)
+    b.add("starcoin", 74, 5, idx=2)
+    b.add("checkpoint", 38, 12)
+    b.add("flag", 76, 9)
+    return b.done(label="2-2", theme="snow", music="underground", time=300,
+                  player=dict(x=2, y=12, form="small"))
+
+
+def level_2_castle() -> dict:
+    """世界 2 城堡：尖刺 + 冰火两重天 + 强化版 Bowser（4 血）。"""
+    b = Builder(70)
+    b.box(0, 0, 69, 2, "M")
+    b.floor(0, 69, top=13, code="I")        # 冰面城堡
+    b.gap(22, 24)
+    b.box(22, 14, 24, 14, "S")
+    b.put(8, 9, "Q")                        # 企鹅装（冰滑 + 冰球打 Boss）
+    b.box(16, 9, 19, 9, "B")
+    b.put(17, 9, "?")
+    b.row(28, 30, 9, "N")
+    b.box(40, 8, 43, 8, "D")
+    b.put(41, 8, "C")
+    b.add("platform", 22, 10, to=(3, 0), period=3.4)
+    b.add("grrrol", 34, 12, dir=1)
+    b.add("drybones", 44, 12, dir=1)
+    b.add("spiny", 30, 12, dir=1)
+    b.add("bowser", 60, 12, hp=4)            # Boss（4 血）
+    b.add("checkpoint", 36, 12)
+    b.add("starcoin", 17, 4, idx=0)
+    b.add("starcoin", 42, 5, idx=1)
+    b.add("starcoin", 64, 4, idx=2)
+    b.add("flag", 66, 9)
+    return b.done(label="2-Castle", theme="castle", music="castle", time=320,
+                  player=dict(x=2, y=12, form="super"))
+
+
 LEVELS = {"1-1": level_1_1(), "1-2": level_1_2(), "1-3": level_1_3(),
-          "1-castle": level_castle(), "1-1b": level_1_1b()}
+          "1-castle": level_castle(), "1-1b": level_1_1b(),
+          "2-1": level_2_1(), "2-2": level_2_2(), "2-castle": level_2_castle()}

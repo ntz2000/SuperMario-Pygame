@@ -106,6 +106,9 @@ class LevelScene(Scene):
     def ladder_at(self, rect: pygame.Rect) -> bool:
         return any(tile and tile.climbable for _c, tile in self.tilemap.cells_in(rect))
 
+    def friction_at(self, rect: pygame.Rect) -> float:
+        return self.tilemap.friction_at(rect)
+
     # -- 计分 ------------------------------------------------------------------------------
     def add_score(self, amount: int, pos=None):
         self.score += amount
@@ -717,6 +720,8 @@ class LevelScene(Scene):
             x, y = self.camera.to_screen(f["x"] - surf.get_width() / 2,
                                         f["y"] - surf.get_height() / 2)
             target.blit(surf, (x, y))
+        if getattr(self.theme, "name", "") == "snow":
+            self._snowfall(target)
         self._hud(target)
         self._hints(target)
         if self.phase == "win" and self.phase_t > 1.2:
@@ -761,6 +766,18 @@ class LevelScene(Scene):
         for i in range(-1, self.app.base[0] // 128 + 2):
             x = (i * 128 - (ox * 0.14) % 128) * S
             target.blit(clouds, (x, (12 + (i % 3) * 6) * S))
+
+    def _snowfall(self, target):
+        """雪落氛围：确定性伪随机雪点（随时间下落 + 视差横向漂移）。"""
+        w, h = target.get_size()
+        ox = self.camera.pos[0]
+        for i in range(46):
+            sx = (i * 53 + ox * 0.3 + (i * i % 7)) % w
+            sy = int((i * 97 + self.time * (1.2 + (i % 3) * 0.4)) * S) % h
+            r = 2 * S if i % 5 == 0 else S
+            alpha = 200 if i % 5 == 0 else 140
+            pygame.draw.circle(target, (255, 255, 255, alpha),
+                               (int(sx), sy), r)
 
     def _hud_text(self, key, text, color):
         """文本只在内容变化时重渲染。"""
