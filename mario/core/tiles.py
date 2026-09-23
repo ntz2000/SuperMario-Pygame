@@ -98,8 +98,11 @@ class TileTable:
         内部统一调度（图集命中优先）。
         """
         base = self.tiles[code]
-        if theme == "overworld" and base.name in ("ground", "rock"):
-            real = f"tile/ow-{base.name}"
+        # 真实瓦片主题前缀（NSMB 官方 tileset，见 mario/assets/atlas.json）
+        REAL = {"overworld": "ow", "underground": "ug", "castle": "castle",
+                "water": "water"}
+        if theme in REAL and base.name in ("ground", "rock"):
+            real = f"tile/{REAL[theme]}-{base.name}"
             try:
                 from ..assets.atlas import ATLAS
                 if f"{real}.top" in ATLAS:

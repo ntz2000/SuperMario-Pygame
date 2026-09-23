@@ -65,9 +65,14 @@ hero.small/mini/mega 保持程序化生成（表里没有对应帧）。
 
 ## 已下载未映射（后续 agent 可扩展）：
 - `nsmbds_spiny.png`（509x302）——刺龟，语义同 koopa（逐列动画）
-- `nsmbds_starcoin.png`（1079×518）——大金币表
 - `nsmbds_tiles_grassland.png`（2566×2053）——草原全量瓦片（含背景装饰）
-- `tilesets_extract/` 其余主题（地下/城堡/水下/雪原/火山）尚未接入 atlas
+- `tilesets_extract/` 雪原/火山/丛林主题尚未接入 atlas
+
+## V4 新增
+- `item/bigcoin`：nsmbds_starcoin.png y218-243 行带 27 帧取 8 帧旋转
+- `tile/ug-*/castle-*/water-*`：三主题 ground+rock 全 6 变体
+  （地下亮灰砖 [10,1]/[12,2]、城堡紫灰 [2,0]/[0,8] 石头 [2,7]/[4,8]、
+  水下岩层 [13,0]/[2,1]）
 
 ## 素材下载方法（复现）
 

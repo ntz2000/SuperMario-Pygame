@@ -745,5 +745,256 @@
     32
    ]
   ]
+ },
+ "item/bigcoin": {
+  "sheet": "nsmbds_starcoin.png",
+  "rects": [
+   [
+    121,
+    218,
+    13,
+    25
+   ],
+   [
+    217,
+    218,
+    18,
+    25
+   ],
+   [
+    314,
+    218,
+    23,
+    25
+   ],
+   [
+    412,
+    218,
+    25,
+    25
+   ],
+   [
+    511,
+    218,
+    25,
+    25
+   ],
+   [
+    610,
+    218,
+    25,
+    25
+   ],
+   [
+    709,
+    218,
+    25,
+    25
+   ],
+   [
+    810,
+    218,
+    21,
+    25
+   ]
+  ]
+ },
+ "tile/ug-ground.top": {
+  "sheet": "tilesets_extract/3 Underground (with ice).png",
+  "rects": [
+   [
+    160,
+    16,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/ug-ground.fill": {
+  "sheet": "tilesets_extract/3 Underground (with ice).png",
+  "rects": [
+   [
+    192,
+    32,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/ug-ground.cap": {
+  "sheet": "tilesets_extract/3 Underground (with ice).png",
+  "rects": [
+   [
+    208,
+    16,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/castle-ground.top": {
+  "sheet": "tilesets_extract/1 Castle.png",
+  "rects": [
+   [
+    32,
+    0,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/castle-ground.fill": {
+  "sheet": "tilesets_extract/1 Castle.png",
+  "rects": [
+   [
+    0,
+    128,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/castle-ground.cap": {
+  "sheet": "tilesets_extract/1 Castle.png",
+  "rects": [
+   [
+    80,
+    112,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/water-ground.top": {
+  "sheet": "tilesets_extract/5 Underwater.png",
+  "rects": [
+   [
+    208,
+    0,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/water-ground.fill": {
+  "sheet": "tilesets_extract/5 Underwater.png",
+  "rects": [
+   [
+    32,
+    16,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/water-ground.cap": {
+  "sheet": "tilesets_extract/5 Underwater.png",
+  "rects": [
+   [
+    224,
+    0,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/ug-rock.top": {
+  "sheet": "tilesets_extract/3 Underground (with ice).png",
+  "rects": [
+   [
+    0,
+    16,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/ug-rock.fill": {
+  "sheet": "tilesets_extract/3 Underground (with ice).png",
+  "rects": [
+   [
+    0,
+    32,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/ug-rock.cap": {
+  "sheet": "tilesets_extract/3 Underground (with ice).png",
+  "rects": [
+   [
+    16,
+    16,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/castle-rock.top": {
+  "sheet": "tilesets_extract/1 Castle.png",
+  "rects": [
+   [
+    32,
+    112,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/castle-rock.fill": {
+  "sheet": "tilesets_extract/1 Castle.png",
+  "rects": [
+   [
+    64,
+    128,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/castle-rock.cap": {
+  "sheet": "tilesets_extract/1 Castle.png",
+  "rects": [
+   [
+    96,
+    112,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/water-rock.top": {
+  "sheet": "tilesets_extract/5 Underwater.png",
+  "rects": [
+   [
+    32,
+    16,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/water-rock.fill": {
+  "sheet": "tilesets_extract/5 Underwater.png",
+  "rects": [
+   [
+    48,
+    16,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/water-rock.cap": {
+  "sheet": "tilesets_extract/5 Underwater.png",
+  "rects": [
+   [
+    16,
+    16,
+    16,
+    16
+   ]
+  ]
  }
 }

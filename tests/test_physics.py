@@ -93,9 +93,19 @@ class TestTileMap:
         assert len(cells) == 4
 
     def test_terrain_recolor_by_theme(self):
+        """有真实瓦片 atlas 时主题走真实贴图；否则用 Theme 配色回退。"""
+        try:
+            from mario.assets.atlas import ATLAS
+            has_atlas = "tile/castle-ground.top" in ATLAS
+        except Exception:
+            has_atlas = False
         m = TileMap(["G"], theme="castle")
         tile = m.tile(0, 0)
-        assert tile.body == m.table.theme("castle").ground[0], "应换成城堡配色"
+        if has_atlas:
+            assert tile.art == "tile/castle-ground" and tile.body == "", \
+                "应使用真实城堡瓦片"
+        else:
+            assert tile.body == m.table.theme("castle").ground[0], "应换成城堡配色"
 
     def test_no_theme_keeps_default(self):
         m = TileMap(["G"])
