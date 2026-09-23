@@ -1,0 +1,9 @@
+# 运行时产物：不进版本库
+# 程序化资源的磁盘缓存（内容哈希命名，删了会自动重建）
+mario/data/art_cache/
+# 游戏存档
+save.json
+save.json.tmp
+# Python
+__pycache__/
+*.pyc
