@@ -39,7 +39,9 @@ class Actor:
 
     @property
     def frame(self) -> int:
-        return int(self.t * self.fps / 60.0)
+        """动画帧号。fps 是每秒帧数（历史 bug：曾写成 t*fps/60，动画慢 60 倍
+        ——这就是"动作僵硬"的元凶）。"""
+        return int(self.t * self.fps)
 
     def frame_surf(self, anim: str | None = None) -> pygame.Surface:
         """Frames live under ``<art>.<anim>``; art with no per-state art falls back."""

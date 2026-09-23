@@ -50,6 +50,8 @@ class Player(Actor):
         self.bubble = False     # 气泡重生（NSMB）：从天上安全降落到出生点
         self._bubble_ground = 0.0
         self._bubble_t = 0.0
+        self.pending_form = ""  # 头顶空间不足时排队等长（防变大穿模）
+        self.squash_t = 0.0     # 落地压扁/起跳拉伸计时（squash&stretch 让动作有生命感）
 
     def start_bubble(self, ground_y: float):
         """进入气泡重生：从出生点上方 150px 开始降落，落地破泡给 2 秒无敌。
@@ -74,10 +76,36 @@ class Player(Actor):
     def set_form(self, form: str, world=None):
         if form not in ("mini", "small", "super", "fire", "ice", "mega"):
             form = "small"
+        # 长高前检查头顶空间（经典行为：顶不够就先不长，留 pending 等有空间）。
+        # 防止变大瞬间嵌入天花板瓦片 → 横移被卡死/视觉穿模。
+        if self.body.h < self._form_h(form) and not self._can_fit(form):
+            self.pending_form = form
+            return
+        self.pending_form = None
+        grew = self.body.h < self._form_h(form)
         self.form = form
         self.art = f"hero.{form}"
         self.body.h = self.height
         self.body.w = max(8, int(self.body.h * 0.66))
+        if grew:
+            self.squash_t = 1.2      # 长大时的弹性缩放（变身动画感）
+
+    def _form_h(self, form: str) -> int:
+        return {"mini": TUNE.mini_h, "small": TUNE.small_h,
+                "super": TUNE.super_h, "fire": TUNE.super_h, "ice": TUNE.super_h,
+                "mega": TUNE.mega_h}.get(form, TUNE.small_h)
+
+    def _can_fit(self, form: str) -> bool:
+        """用目标形态的碰撞盒试放，看是否嵌进实心瓦片。"""
+        h = self._form_h(form)
+        r = pygame.Rect(round(self.body.x - self.body.w / 2),
+                        round(self.body.y - h), self.body.w, h)
+        for cell, kind in self.world.tilemap.solid_cells(r):
+            if kind != "solid":
+                continue
+            if r.colliderect(cell.inflate(-2, -2)):
+                return False
+        return True
 
     def grow(self, world):
         if self.form in ("mini", "small"):
@@ -151,6 +179,21 @@ class Player(Actor):
                 self.set_form("super")
                 world.fx("pop", self.body.center)
                 world.sfx("shrink")
+        # 排队的变身：头顶有空间了就长
+        if self.pending_form and self._can_fit(self.pending_form):
+            form, self.pending_form = self.pending_form, ""
+            old_h = self.body.h
+            self.form = form
+            self.art = f"hero.{form}"
+            self.body.h = self._form_h(form)
+            self.body.w = max(8, int(self.body.h * 0.66))
+            self.squash_t = 1.2 if self.body.h > old_h else -1.2   # 长大弹一下
+            world.fx("pop", self.body.center)
+            world.sfx("power-up")
+        if self.squash_t > 0:          # 负值=拉伸，向 0 衰减
+            self.squash_t = max(0.0, self.squash_t - 1 / 30.0)
+        elif self.squash_t < 0:
+            self.squash_t = min(0.0, self.squash_t + 1 / 30.0)
         self.in_water = world.fluid_at(b.rect.inflate(-2, -2))
         self.climbing = world.ladder_at(b.rect)
 
@@ -176,6 +219,7 @@ class Player(Actor):
             if not self.was_on_ground:
                 world.on_land(self)
                 self.combo = 0
+                self.squash_t = 0.8 if vy_before > 4.0 else 0.5   # 落地压扁
                 if vy_before > 4.5:             # 重落地扬尘
                     for i in (-1, 1):
                         world.fx("dust", (b.x + i * 4, b.y))
@@ -249,6 +293,7 @@ class Player(Actor):
                 run_boost = TUNE.run_jump_bonus if abs(b.vx) > TUNE.walk_max else 1.0
                 b.vy = -TUNE.jump_vel * run_boost * jump_scale
                 self._coyote = 0.0
+                self.squash_t = -0.7          # 起跳拉伸（负值=拉长）
                 world.sfx("mini-jump" if self.form == "mini" else "jump")
             elif self._wall_coyote > 0:
                 # 墙跳：沿墙反方向跃出
@@ -322,10 +367,14 @@ class Player(Actor):
     # -- 动画 ------------------------------------------------------------------------------
     def _anim(self, inp):
         b = self.body
+        # 动画速率随速度（NSMB 手感：18 帧 walk 在跑动时 ~0.6s 一循环）
+        def _pace():
+            self.fps = min(34.0, 15.0 + abs(b.vx) * 8.0)
         if self.climbing:
             self.set_anim("swim")
         elif self.in_water:
             self.set_anim("swim")
+            self.fps = 10.0
         elif self.wall_slide:
             self.set_anim("skid")
         elif not b.on_ground:
@@ -335,21 +384,24 @@ class Player(Actor):
                 self.set_anim("spin")
             else:
                 self.set_anim("jump" if b.vy < -0.4 else "fall")
-        elif inp is None or not any(inp.held(a) for a in ("left", "right")):
-            if abs(b.vx) > 0.25:
-                self.set_anim("run" if abs(b.vx) > TUNE.walk_max else "walk")
-                self.fps = 9.0 + abs(b.vx) * 2.2
-            else:
-                self.set_anim("idle")
-                self.fps = 4.0
+        elif inp is None:
+            self.set_anim("idle")
+            self.fps = 6.0
+        elif (inp.held("left") and b.vx > 0.9) or (inp.held("right") and b.vx < -0.9):
+            # 反向急刹：速度与输入相反且够快 → 打滑姿势（NSMB 的 skid 烟雾时刻）
+            self.set_anim("skid")
         elif inp.held("down"):
-            self.set_anim("crawl")
+            self.set_anim("crawl" if abs(b.vx) > 0.25 else "crawl")
+            self.fps = 8.0
         elif abs(b.vx) > 0.25:
-            self.set_anim("run" if abs(b.vx) > TUNE.walk_max else "walk")
-            self.fps = 9.0 + abs(b.vx) * 2.2
+            want = "run" if abs(b.vx) > TUNE.walk_max else "walk"
+            # walk↔run 是同一循环的快慢版，切换时不重置帧（否则在阈值附近
+            # 抖动会每帧归零动画，看起来完全静止）
+            self.set_anim(want, reset=False)
+            _pace()
         else:
             self.set_anim("idle")
-            self.fps = 4.0
+            self.fps = 6.0
         if self.holding:
             self.set_anim("throw", reset=False)
 
@@ -372,6 +424,17 @@ class Player(Actor):
             surf.blit(veil, (0, 0), special_flags=pygame.BLEND_RGBA_ADD)
         if self.flip:
             surf = pygame.transform.flip(surf, True, False)
+        # squash & stretch：落地压扁（宽+高-），起跳拉伸（宽-高+）
+        k = self.squash_t
+        if k:
+            amount = min(1.0, abs(k)) * 0.18
+            if k > 0:   # 落地压扁
+                w2 = round(surf.get_width() * (1 + amount))
+                h2 = round(surf.get_height() * (1 - amount))
+            else:        # 起跳拉伸
+                w2 = round(surf.get_width() * (1 - amount))
+                h2 = round(surf.get_height() * (1 + amount))
+            surf = pygame.transform.scale(surf, (w2, h2))
         x, y = cam.to_screen(self.body.x - surf.get_width() / 2,
                              self.body.y - surf.get_height())
         target.blit(surf, (x, y))

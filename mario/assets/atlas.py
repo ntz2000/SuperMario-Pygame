@@ -80,6 +80,10 @@ def atlas_asset(id: str, res_scale: int):
 
     id 支持 "hero.fire.walk" 这类派生形式：fire/ice 是 super 的调色板换色
     （NSMB 原版同款做法），命中 "hero.super.<anim>" 条目后按 form 重着色。
+
+    条目可带 ``fit_h``（逻辑像素目标高度）：真实帧缩放到贴合碰撞盒，
+    避免贴图大面积超出碰撞盒导致视觉穿模（历史 bug：super 贴图 66px vs
+    碰撞盒 44px，头穿天花板）。
     """
     entry = ATLAS.get(id)
     remap = ""
@@ -99,4 +103,13 @@ def atlas_asset(id: str, res_scale: int):
         if res_scale != 1:
             cell = pygame.transform.scale(cell, (w * res_scale, h * res_scale))
         frames.append(cell)
+    # 缩放到目标逻辑高度（乘 res_scale 后的目标渲染高度）
+    fit_h = entry.get("fit_h")
+    if fit_h and frames:
+        target = fit_h * res_scale
+        cur = frames[0].get_height()
+        if abs(cur - target) > 1:
+            k = target / cur
+            frames = [pygame.transform.scale(
+                f, (max(1, round(f.get_width() * k)), target)) for f in frames]
     return frames
