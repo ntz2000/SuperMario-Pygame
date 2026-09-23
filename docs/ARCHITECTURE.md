@@ -48,6 +48,12 @@ tests/                      pytest：物理/资产一致性/关卡数据/玩法�
 
 ## 核心概念
 
+### 0. 渲染管线（高清）
+模拟跑在 320x180 艺术像素网格上；渲染缓冲是 ×RES_SCALE（默认 2 = 640x360），
+精灵生成时直接输出高清（[engine/res.py](../mario/engine/res.py)）。
+真实 NSMB 素材图集（[mario/assets/](../mario/assets/)）优先于程序化生成，
+id 共用自动回退——详见 [ASSETS.md](ASSETS.md)。
+
 ### 1. 关卡场景即 world
 [scenes/level.py](../mario/scenes/level.py) 的 `LevelScene` 同时是 actors 拿到的 `world`：
 提供 `spawn/sfx/fx/shake/fluid_at/note_check/pound_impact` 等动词。交互规则
@@ -125,9 +131,10 @@ tests/                      pytest：物理/资产一致性/关卡数据/玩法�
 
 ## 后续路线（建议优先级）
 
-1. **进度存档**：`app.progress` 目前只在内存（done/stars/lives），落盘 JSON 即可持久化。
-2. **世界 2+**：照 `levels.py` 的 DSL 扩展；新主题在 `tiles.py` 的 THEMES 加调色即可。
+1. **真实素材扩展**：Mario 姿势表（436 帧，`sheets/mario_sprites.json` 有切分数据）
+   与敌人 GIF 的语义映射、其余主题（地下/城堡/水）瓦片接入——方法见 [ASSETS.md](ASSETS.md)。
+2. **世界 2+**：照 `levels.py` 的 DSL 扩展；雪原/火山瓦片集已在 `tilesets_extract/`。
 3. **更多机制**：冰面打滑（tile 加 friction 字段）、伸缩管、Yoshi 类坐骑、
-   对战模式（本地双人 pygame 有 joystick 支持）。
+   本地双人（pygame joystick）。
 4. **手感微调**：tuning.py 单文件可调；改后跑 pytest 里 gameplay 测试防回归。
 5. **音量/键位设置界面**：App.volume/input.bindings 已有钩子。

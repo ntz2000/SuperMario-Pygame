@@ -42,7 +42,8 @@ def main(argv=None) -> int:
     p.add_argument("--level", default="1-1")
     p.add_argument("--frames", type=int, default=0, help="stop after N sim frames (0 = free run)")
     p.add_argument("--capture", default="", help="write the final frame here and exit")
-    p.add_argument("--scale", type=int, default=4)
+    p.add_argument("--scale", type=int, default=2,
+                   help="window multiplier on top of the 640x360 render buffer")
     p.add_argument("--width", default="1280")
     p.add_argument("--height", default="720")
     p.add_argument("--headless", action="store_true", default=None)

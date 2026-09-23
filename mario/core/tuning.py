@@ -20,13 +20,15 @@ class Tuning:
     gravity_release: float = 0.62   # 提前松开跳跃的额外削减
     max_fall: float = 7.0
     # --- ground movement ---------------------------------------------------------------
-    walk_max: float = 1.32
+    # 手感基准：SMB/NSMB 的地面加速度约 0.036~0.05 px/f²，比"一按就窜出去"的
+    # 0.11+ 沉得多；空中转向能力被压到 1/3，跳跃弧线因此"有承诺感"而不飘。
+    walk_max: float = 1.30
     run_max: float = 2.06
-    accel_walk: float = 0.11
-    accel_run: float = 0.155
-    decel: float = 0.135
-    skid_decel: float = 0.30
-    air_control: float = 0.66
+    accel_walk: float = 0.048
+    accel_run: float = 0.075
+    decel: float = 0.10
+    skid_decel: float = 0.26
+    air_control: float = 0.30
     # --- jump --------------------------------------------------------------------------
     jump_vel: float = 7.4
     coyote: int = 6                # 离开平台后的宽限帧数

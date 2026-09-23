@@ -11,6 +11,7 @@ import pygame
 class Scene:
     name = "scene"
     opaque = True  # opaque scenes clear the target before drawing
+    native = False  # True=直接画到高清 buffer；False=画进 base 尺寸离屏再放大
 
     def __init__(self, app):
         self.app = app
@@ -87,6 +88,7 @@ class SceneManager:
         self.stack: list[Scene] = []
         self.transition = Transition()
         self.transition.phase = "done"
+        self._offscreen = None   # 像素风场景的高清放大中转
 
     @property
     def top(self) -> Scene | None:
@@ -128,7 +130,17 @@ class SceneManager:
 
     def draw(self, target: pygame.Surface):
         for scene in reversed(self.stack):
-            scene.draw(target)
+            if getattr(scene, "native", False):
+                scene.draw(target)
+            else:
+                # 像素风场景：画进 base 尺寸的离屏，再整数倍放大到高清 buffer
+                if self._offscreen is None or self._offscreen.get_size() != self.app.base:
+                    self._offscreen = pygame.Surface(self.app.base, pygame.SRCALPHA)
+                if scene.opaque:
+                    self._offscreen.fill((0, 0, 0, 0))
+                scene.draw(self._offscreen)
+                target.blit(pygame.transform.scale(self._offscreen, target.get_size()),
+                            (0, 0))
             if scene.opaque:
                 break
         self.transition.draw(target)

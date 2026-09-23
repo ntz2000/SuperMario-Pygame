@@ -114,6 +114,7 @@ FORMS = {
     "small": dict(h=14, shirt=RED, over=BLUE),
     "super": dict(h=22, shirt=RED, over=BLUE),
     "fire": dict(h=22, shirt=hexc("#f2f0ea"), over=RED),
+    "ice": dict(h=22, shirt=hexc("#f0f6ff"), over=hexc("#3a7fd0")),
     "mini": dict(h=10, shirt=RED, over=BLUE),
     "mega": dict(h=26, shirt=hexc("#e8d44a"), over=hexc("#c9442a")),
 }

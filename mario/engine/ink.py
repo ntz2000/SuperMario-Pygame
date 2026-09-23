@@ -113,16 +113,20 @@ class Canvas:
 
     # -- finish ----------------------------------------------------------------------
     def finish(self, outline: float = 1.0, light=(-1.0, -1.0), rim: float = 0.30,
-               shade_edge: float = 0.16) -> pygame.Surface:
-        """Downsample, then add outline + rim light + core shade; return a Surface."""
-        w, h = self.size
+               shade_edge: float = 0.16, out_scale: int = 1) -> pygame.Surface:
+        """Downsample, then add outline + rim light + core shade; return a Surface.
+
+        ``out_scale`` 为输出分辨率倍率：内部以 SS 倍超采样画形，一步缩到
+        size×out_scale——高清模式（RES_SCALE=2）下精灵天生就是高清的。
+        """
+        w, h = self.size[0] * out_scale, self.size[1] * out_scale
         img = self._img.resize((w, h), Image.BOX)
         arr = np.asarray(img).astype(np.float32)
         alpha = arr[..., 3] / 255.0
         solid = alpha > 0.35
 
         if outline > 0:
-            ring = _dilate(solid, int(round(outline))) & ~solid
+            ring = _dilate(solid, max(1, int(round(outline * out_scale)))) & ~solid
             # Edge pixels keep a smear of the shape's own color after BOX resize;
             # darken it so outlines inherit local hue. Fully clear pixels go neutral.
             base = arr[ring, :3] * 0.40
@@ -132,10 +136,11 @@ class Canvas:
 
         if light is not None:
             lx, ly = light
-            left = solid & _shift(~solid, -int(round(outline)), 0)
-            right = solid & _shift(~solid, int(round(outline)), 0)
-            top = solid & _shift(~solid, 0, -int(round(outline)))
-            bottom = solid & _shift(~solid, 0, int(round(outline)))
+            r = max(1, int(round(outline * out_scale)))
+            left = solid & _shift(~solid, -r, 0)
+            right = solid & _shift(~solid, r, 0)
+            top = solid & _shift(~solid, 0, -r)
+            bottom = solid & _shift(~solid, 0, r)
             lit = np.zeros_like(solid)
             dark = np.zeros_like(solid)
             if ly < 0:

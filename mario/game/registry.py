@@ -21,6 +21,7 @@ ACTORS: dict[str, type] = {
     "1up": O.OneUp,
     "mega": O.MegaMushroom,
     "fire_flower": O.FireFlower,
+    "ice_flower": O.IceFlower,
     "star": O.Star,
     "mini": O.Mini,
     "coin": O.Coin,
@@ -33,6 +34,7 @@ ACTORS: dict[str, type] = {
     "checkpoint": O.CheckpointFlag,
     "flag": O.GoalFlag,
     "fireball": O.Fireball,
+    "iceball": O.IceBall,
 }
 
 

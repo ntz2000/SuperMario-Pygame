@@ -93,11 +93,19 @@ class TileTable:
     def terrain(self, code: str, theme: str) -> Tile:
         """A terrain tile wearing an environment's palette.
 
-        The art id stays the registered one (``tile/ground`` ...); only the colour
-        arguments change, and those ride through ``Assets.sprite`` overrides so the
-        on-disk cache is keyed by them.
+        草原（overworld）使用真实 NSMB 瓦片图集（mario/assets/atlas.json），
+        其余主题沿用注册的 art id + 主题配色——两条路径由 ``Assets.sprite``
+        内部统一调度（图集命中优先）。
         """
         base = self.tiles[code]
+        if theme == "overworld" and base.name in ("ground", "rock"):
+            real = f"tile/ow-{base.name}"
+            try:
+                from ..assets.atlas import ATLAS
+                if f"{real}.top" in ATLAS:
+                    return replace(base, art=real, body="", lip="", grit="")
+            except ImportError:
+                pass
         family = TERRAIN_FAMILIES.get(base.name, "rock")
         colors = getattr(self.theme(theme), family)
         return replace(base, body=colors[0], lip=colors[1], grit=colors[2])
@@ -119,6 +127,7 @@ def default_table() -> TileTable:
     add(Tile("b", "brick", "tile/brick", bumpable=True, destructible=True, item=""))
     add(Tile("?", "question", "tile/question", bumpable=True, item="coin"))
     add(Tile("!", "power block", "tile/question", bumpable=True, item="fire_flower"))
+    add(Tile("f", "ice block", "tile/question", bumpable=True, item="ice_flower"))
     add(Tile("*", "star block", "tile/question", bumpable=True, item="star"))
     add(Tile("m", "mini block", "tile/question", bumpable=True, item="mini"))
     add(Tile("g", "mega block", "tile/question", bumpable=True, item="mega"))

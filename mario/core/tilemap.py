@@ -115,12 +115,16 @@ class TileMap:
         """Rasterize tile strip ``index``; cells in ``bumps`` get a rising animation.
 
         Chunks containing active bumps are rebuilt every frame (cheap: 16x15 cells),
-        the rest come from the render cache.
+        the rest come from the render cache. 条带以 16px 艺术分辨率光栅化，
+        再按 RES_SCALE 放大缓存——高清渲染的同时碰撞/逻辑完全不变。
         """
+        from ..engine.res import RES_SCALE
         if index in self._chunks and not bumps:
             return self._chunks[index]
         w = min(CHUNK, max(0, self.w - index * CHUNK))
-        surf = pygame.Surface((max(1, w) * TILE, self.h * TILE), pygame.SRCALPHA)
+        # 直接按高清分辨率光栅化：art 本身就是 TILE×RES_SCALE 的
+        surf = pygame.Surface((max(1, w) * TILE * RES_SCALE,
+                               self.h * TILE * RES_SCALE), pygame.SRCALPHA)
         for tx in range(index * CHUNK, index * CHUNK + w):
             for ty in range(self.h):
                 tile = self.tile(tx, ty)
@@ -133,7 +137,8 @@ class TileMap:
                     dy = -round(math.sin(min(1.0, k) * math.pi) * 6)
                 art = self.assets.sprite(f"{tile.art}.{self.variant(tx, ty, tile)}",
                                         **tile.colors()).surface
-                surf.blit(art, (tx * TILE - index * CHUNK * TILE, ty * TILE + dy))
+                surf.blit(art, ((tx * TILE - index * CHUNK * TILE) * RES_SCALE,
+                                (ty * TILE + dy) * RES_SCALE))
         if not bumps:
             self._chunks[index] = surf
         return surf
@@ -141,6 +146,7 @@ class TileMap:
     def draw(self, target: pygame.Surface, view: pygame.Rect, bumps: dict | None = None):
         if self.assets is None:
             return
+        from ..engine.res import RES_SCALE
         first = max(0, (view.left // TILE) // CHUNK)
         last = min((self.w - 1) // CHUNK, (view.right // TILE) // CHUNK)
         # 只有含顶起格子的列需要绕过缓存
@@ -150,7 +156,8 @@ class TileMap:
                           if tx // CHUNK == i} or None
             surf = self.chunk(i) if (strip_bumps is None and i not in hot) \
                 else self.chunk(i, strip_bumps)
-            target.blit(surf, (i * CHUNK * TILE - view.left, -view.top))
+            target.blit(surf, ((i * CHUNK * TILE - view.left) * RES_SCALE,
+                               -view.top * RES_SCALE))
 
     # -- io ----------------------------------------------------------------------------
     @classmethod

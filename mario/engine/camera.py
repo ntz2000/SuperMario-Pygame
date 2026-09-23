@@ -14,12 +14,13 @@ class Camera:
     is what makes an NSMB camera read as confident rather than floaty.
     """
 
-    def __init__(self, view, bounds, ease: float = 0.22):
+    def __init__(self, view, bounds, ease: float = 0.22, follow_x: float = 0.55):
         self.view = (int(view[0]), int(view[1]))
         self.bounds = pygame.Rect(bounds)
         self.pos = [float(self.bounds.left), float(self.bounds.top)]
         self.zone = (self.view[0] * 0.30, self.view[1] * 0.30)
         self.ease = ease
+        self.follow_x = follow_x   # 横向缓动系数：1.0=紧贴（晃），0.55=NSMB 的沉稳跟随
         self.shake = 0.0
         self._t = 0
 
@@ -52,9 +53,11 @@ class Camera:
             dy = rect.top - zy
         elif rect.bottom > zy + self.zone[1]:
             dy = rect.bottom - (zy + self.zone[1])
-        # 横向硬跟随；竖向带缓动，snap=True 时进场直接对齐
+        # 横向缓动跟随（紧贴会晃眼）；snap=True 时进场直接对齐
+        rate_x = 1.0 if snap else self.follow_x
         self.pos[0], self.pos[1] = self.clamp(
-            self.pos[0] + dx, self.pos[1] + dy * (1.0 if snap else self.ease))
+            self.pos[0] + dx * rate_x,
+            self.pos[1] + dy * (1.0 if snap else self.ease))
 
     def update(self, rect: pygame.Rect, vx: float = 0.0, snap: bool = False):
         self.follow(rect, vx, snap=snap)
@@ -72,8 +75,10 @@ class Camera:
         return (round(self.pos[0]), round(self.pos[1]))
 
     def to_screen(self, x: float, y: float) -> tuple[int, int]:
+        """世界艺术像素 → 渲染缓冲像素（含倍率：模拟不变，渲染高清）。"""
         ox, oy = self.offset
-        return (round(x - ox), round(y - oy))
+        from .res import RES_SCALE
+        return (round((x - ox) * RES_SCALE), round((y - oy) * RES_SCALE))
 
     def world_rect(self, rect: pygame.Rect) -> pygame.Rect:
         ox, oy = self.offset

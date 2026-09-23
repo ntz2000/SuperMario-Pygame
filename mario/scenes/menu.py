@@ -63,6 +63,30 @@ class MenuScene(Scene):
         for i, opt in enumerate(self.options):
             col = (255, 240, 150) if i == self.index % len(self.options) else (226, 226, 236)
             target.blit(f.render(opt.upper(), True, col), (w // 2 - 44, h // 2 - 14 + i * 17))
+        self._keys_panel(target)
+
+    def _keys_panel(self, target):
+        """右侧键位速查（NSMB 技能全都在这）。"""
+        w, h = self.app.base
+        rows = (
+            ("移动/跑", "← → / Shift"),
+            ("跳（按住更高）", "K 空格"),
+            ("旋转跳", "X"),
+            ("下砸", "空中 ↓+K"),
+            ("技能·搬壳·火球/冰球", "C"),
+            ("蹲/进管道", "↓"),
+            ("暂停", "Enter"),
+        )
+        f = pygame.font.Font(None, 14)
+        pw = 128
+        panel = pygame.Surface((pw, len(rows) * 11 + 10), pygame.SRCALPHA)
+        panel.fill((16, 20, 38, 215))
+        y = 4
+        for name, key in rows:
+            panel.blit(f.render(name, True, (215, 215, 230)), (5, y))
+            panel.blit(f.render(key, True, (255, 226, 130)), (74, y))
+            y += 11
+        target.blit(panel, (w - pw - 3, h // 2 - panel.get_height() // 2))
 
 
 class GameOverScene(Scene):

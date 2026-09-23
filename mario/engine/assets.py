@@ -21,6 +21,7 @@ import pygame
 from PIL import Image
 
 from . import ink
+from .res import RES_SCALE
 from .audio import to_wav
 
 DEFAULT_CACHE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "art_cache")
@@ -146,7 +147,20 @@ class Assets:
 
         ``over`` overrides the registered generator kwargs, which is how one terrain
         generator serves five palettes without a decorator per environment.
+
+        优先查真实素材图集（mario/assets/atlas.json）：命中直接裁剪，
+        未命中回落到程序化生成器——两条路径共用同一套 id。
         """
+        from ..assets import atlas as _atlas
+        try:
+            frames = _atlas.atlas_asset(id, RES_SCALE)
+        except (OSError, ValueError, pygame.error):
+            frames = None
+        if frames is not None and not over:
+            key = f"atlas:{id}@{RES_SCALE}"
+            if key not in self._mem:
+                self._mem[key] = Asset(id, frames)
+            return self._mem[key]
         if id not in _REGISTRY:
             raise UnknownAsset(id)
         fn, kwargs, _ = _REGISTRY[id]
@@ -159,7 +173,8 @@ class Assets:
             _SIG_MEMO[id] = accepted = frozenset(inspect.signature(fn).parameters)
         opts = {k: v for k, v in kwargs.items() if k in accepted}
         opts.update({k: v for k, v in over.items() if k in accepted})
-        opts.update({"_frames": meta["frames"], "_finish": meta["finish"]})
+        opts.update({"_frames": meta["frames"], "_finish": meta["finish"],
+                     "_res": RES_SCALE})
         fp = _fingerprint(id, opts)
         if f"{id}@{fp}" in self._mem:
             return self._mem[f"{id}@{fp}"]
@@ -199,7 +214,8 @@ class Assets:
             result = fn(**opts)
         if kind == "sprite":
             frames = result if isinstance(result, (list, tuple)) else [result]
-            surfaces = [f.finish(**meta["finish"]) if isinstance(f, ink.Canvas) else f
+            fin = {**meta["finish"], "out_scale": RES_SCALE}
+            surfaces = [f.finish(**fin) if isinstance(f, ink.Canvas) else f
                         for f in frames]
             return Asset(id, surfaces)
         if isinstance(result, np.ndarray):        # note tables arrive as samples

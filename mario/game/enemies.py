@@ -36,6 +36,7 @@ class Enemy(Actor):
         self.state = "walk"
         self.carried = False
         self.wake_t = 0.0
+        self.frozen_t = 0.0       # 冰冻剩余时间（state=="frozen" 时有效）
         self.invuln = 0.0
         self._multi = None        # multi_frame 的缓存
         self.h0 = type(self).h    # 壳化后恢复用
@@ -63,8 +64,15 @@ class Enemy(Actor):
             if self.squashed <= 0:
                 self.kill()
             return
+        # 冰冻：不能动不能伤人，倒数解冻（快解冻时抖动预警）
+        if self.state == "frozen":
+            self.frozen_t -= 1 / 60.0
+            if self.frozen_t <= 0:
+                self.state = "walk"
+                world.fx("splash", self.body.center)
+            self.body.vx = 0.0
         # 龟壳静止时慢慢苏醒
-        if self.state == "shell":
+        elif self.state == "shell":
             self.wake_t += 1 / 60.0
             if self.wake_t > 6.0:
                 self.state = "walk"
@@ -90,6 +98,28 @@ class Enemy(Actor):
             self.kill()
 
     # -- 交互 ------------------------------------------------------------------------------
+    def freeze(self, world):
+        """冰球命中：冻成冰块 5 秒。踩碎得分；Boss 冻不住。"""
+        if self.state == "frozen" or not self.awake:
+            return
+        if type(self).__name__ == "Bowser":
+            return                 # Boss 免疫冰冻（NSMB 同款）
+        self.state = "frozen"
+        self.frozen_t = 5.0
+        self.body.vx = 0.0
+        world.sfx("freeze")
+        world.fx("sparkle", self.body.center)
+
+    def shatter_ice(self, world):
+        """冻结的敌人被踩碎。"""
+        self.kill()
+        world.sfx("break")
+        world.add_score(self.score, self.body.center)
+        c = self.body.center
+        for dx, dy in ((-1, -1), (1, -1), (-1, 1), (1, 1)):
+            world.fx("shard", (c[0] + dx * 4, c[1] + dy * 4), vx=dx * 1.2,
+                     vy=dy * 1.0 - 1.2, g=0.3, life=0.4)
+
     def to_shell(self, world, by):
         """踩第一下：缩壳。"""
         self.state = "shell"
@@ -97,10 +127,15 @@ class Enemy(Actor):
         self.body.vx = 0.0
         self.wake_t = 0.0
         world.sfx("stomp")
+        world.hint("按 C 搬起龟壳 · 再按 C 扔出", key="shell")
 
     def stomp(self, world, by):
         if not self.stompable:
             return False
+        if self.state == "frozen":
+            # 冻结的敌人：踩上去直接踩碎冰块
+            self.shatter_ice(world)
+            return True
         if self.shell:
             if self.state == "walk":
                 self.to_shell(world, by)
@@ -137,6 +172,9 @@ class Enemy(Actor):
                                  self.body.y - surf.get_height())
             target.blit(surf, (x, y))
             return
+        if self.state == "frozen":
+            self._draw_frozen(target, cam)
+            return
         if self.squashed > 0:
             # 压扁贴图：高度压到 40%
             surf = self.frame_surf()
@@ -154,6 +192,26 @@ class Enemy(Actor):
             target.blit(surf, (x, y))
             return
         super().draw(target, cam)
+
+    def _draw_frozen(self, target, cam):
+        """冻结的敌人：原帧 + 蓝色冰壳；快解冻时闪白抖动。"""
+        surf = self.frame_surf()
+        if self.flip:
+            surf = pygame.transform.flip(surf, True, False)
+        surf = surf.copy()
+        ice = pygame.Surface(surf.get_size(), pygame.SRCALPHA)
+        ice.fill((140, 205, 255, 115))
+        surf.blit(ice, (0, 0))
+        r = surf.get_rect()
+        pygame.draw.rect(surf, (215, 240, 255), r, 1)
+        if self.frozen_t < 1.2 and int(self.frozen_t * 20) % 2:
+            flash = pygame.Surface(surf.get_size(), pygame.SRCALPHA)
+            flash.fill((255, 255, 255, 90))
+            surf.blit(flash, (0, 0))
+        x, y = cam.to_screen(self.body.x - surf.get_width() / 2,
+                            self.body.y - surf.get_height())
+        jitter = 1 if (self.frozen_t < 1.2 and int(self.frozen_t * 24) % 2) else 0
+        target.blit(surf, (x + jitter, y))
 
 
 class Goomba(Enemy):

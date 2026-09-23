@@ -103,6 +103,8 @@ SFX = {
     "boss-hit": lambda: A.mix(A.tone(85, 0.24, "square", 0.34, decay=9),
                               A.noise(0.18, 0.2, 10.0)),
     "fire": lambda: A.noise(0.3, 0.22, 6.0, lp=0.25),
+    "freeze": lambda: A.mix(A.tone("E6", 0.14, "sine", 0.26, decay=6),
+                            A.tone("B6", 0.22, "sine", 0.2, decay=7), offset=0.05),
     "clear": lambda: A.mix(*[A.tone(n, 0.16, "triangle", 0.24, decay=2.5)
                              for n in ("C5", "E5", "G5", "C6", "E6", "G6")]),
 }

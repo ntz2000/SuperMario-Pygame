@@ -12,6 +12,7 @@ import pygame
 from ..core.actor import Actor
 from ..core.physics import move_x, move_y
 from ..core.tiles import TILE
+from ..engine.res import RES_SCALE as S
 
 
 class PowerUp(Actor):
@@ -69,6 +70,7 @@ class MegaMushroom(PowerUp):
         player.set_form("mega")
         player.mega_t = 8.0
         world.sfx("power-up")
+        world.hint("巨大化！撞碎砖块、碾压敌人", key="mega")
         world.add_score(2000, self.body.center)
 
 
@@ -90,6 +92,22 @@ class FireFlower(PowerUp):
         elif player.form in ("small", "super"):
             player.set_form("fire")
         world.sfx("power-up")
+        world.hint("火之花到手！按 C 发射火球", key="fire")
+        world.add_score(1000, self.body.center)
+
+
+class IceFlower(PowerUp):
+    """冰之花（NSMB Wii）：发射冰球把敌人冻成冰块，冰块可以踩碎。"""
+
+    art = "item/ice_flower"
+
+    def apply(self, world, player):
+        if player.form == "mini":
+            player.set_form("small")
+        elif player.form in ("small", "super", "fire"):
+            player.set_form("ice")
+        world.sfx("power-up")
+        world.hint("冰之花到手！按 C 发射冰球冻结敌人", key="ice")
         world.add_score(1000, self.body.center)
 
 
@@ -120,6 +138,7 @@ class Star(PowerUp):
     def apply(self, world, player):
         player.star = 8.0
         world.sfx("star")
+        world.hint("无敌星！碰到的敌人直接撞飞", key="star")
         world.add_score(1000, self.body.center)
 
 
@@ -133,6 +152,7 @@ class Mini(PowerUp):
         player.set_form("mini")
         player.mini = 12.0
         world.sfx("power-up")
+        world.hint("迷你马里奥！更轻快，跳得更高", key="mini")
 
 
 class BlockCoin(Actor):
@@ -267,7 +287,7 @@ class MovingPlatform(Actor):
     def draw(self, target, cam):
         surf = self.world.assets.sprite(self.art).surface
         x, y = cam.to_screen(self.body.x - self.body.w / 2, self.body.y - self.body.h)
-        target.blit(pygame.transform.scale(surf, (self.body.w, self.body.h)), (x, y))
+        target.blit(pygame.transform.scale(surf, (self.body.w * S, self.body.h * S)), (x, y))
 
 
 class WarpPipe(Actor):
@@ -314,13 +334,13 @@ class CheckpointFlag(Actor):
 
     def draw(self, target, cam):
         x, y = cam.to_screen(self.body.x - 2, self.body.y - self.h)
-        pygame.draw.rect(target, (190, 190, 210), (x, y, 3, self.h))
-        pygame.draw.circle(target, (255, 240, 160), (x + 1, y), 2)
-        fy = y + 6
+        pygame.draw.rect(target, (190, 190, 210), (x, y, 3 * S, self.h * S))
+        pygame.draw.circle(target, (255, 240, 160), (x + S, y), 2 * S)
         # 未过：灰旗；已过：金旗升起
-        fy = y + 6 + (1.0 - min(1.0, self.flag_t)) * 18
+        fy = y + 6 * S + (1.0 - min(1.0, self.flag_t)) * 18 * S
         col = (255, 214, 90) if self.passed else (150, 150, 165)
-        pygame.draw.polygon(target, col, [(x + 3, fy), (x + 15, fy + 4), (x + 3, fy + 9)])
+        pygame.draw.polygon(target, col, [(x + 3 * S, fy), (x + 15 * S, fy + 4 * S),
+                                         (x + 3 * S, fy + 9 * S)])
 
 
 class GoalFlag(Actor):
@@ -342,16 +362,16 @@ class GoalFlag(Actor):
     def draw(self, target, cam):
         x, y = cam.to_screen(self.body.x - 3, self.body.y - self.h)
         # 杆
-        pygame.draw.rect(target, (200, 205, 220), (x + 2, y, 3, self.h))
-        pygame.draw.rect(target, (255, 255, 255), (x + 2, y, 1, self.h))
+        pygame.draw.rect(target, (200, 205, 220), (x + 2 * S, y, 3 * S, self.h * S))
+        pygame.draw.rect(target, (255, 255, 255), (x + 2 * S, y, S, self.h * S))
         # 顶球
-        pygame.draw.circle(target, (255, 224, 130), (x + 3, y), 3)
+        pygame.draw.circle(target, (255, 224, 130), (x + 3 * S, y), 3 * S)
         # 旗（随 flag_t 从顶滑到底）
-        fy = y + 6 + (1.0 - self.flag_t) * (self.h - 20)
-        pts = [(x + 5, fy), (x + 20, fy + 6), (x + 5, fy + 13)]
+        fy = y + 6 * S + (1.0 - self.flag_t) * (self.h - 20) * S
+        pts = [(x + 5 * S, fy), (x + 20 * S, fy + 6 * S), (x + 5 * S, fy + 13 * S)]
         pygame.draw.polygon(target, (72, 168, 80), pts)
-        pygame.draw.polygon(target, (120, 210, 120), [(x + 5, fy), (x + 12, fy + 3),
-                                                      (x + 5, fy + 6)])
+        pygame.draw.polygon(target, (120, 210, 120),
+                            [(x + 5 * S, fy), (x + 12 * S, fy + 3 * S), (x + 5 * S, fy + 6 * S)])
 
 
 class Fireball(Actor):
@@ -359,6 +379,7 @@ class Fireball(Actor):
     w, h = 8, 8
     z = 14
     tag = "proj"
+    freezes = False
     collides_player = False
 
     def __init__(self, world, x, y, dir=1, **kw):
@@ -384,5 +405,35 @@ class Fireball(Actor):
 
     def draw(self, target, cam):
         x, y = cam.to_screen(*self.body.center)
-        pygame.draw.circle(target, (255, 190, 90), (x, y), 3)
-        pygame.draw.circle(target, (255, 245, 200), (x, y), 1)
+        pygame.draw.circle(target, (255, 190, 90), (x, y), 3 * S)
+        pygame.draw.circle(target, (255, 245, 200), (x, y), S)
+
+
+class IceBall(Fireball):
+    """冰球：命中敌人改为冻结（由 level 的投射物循环调用 freeze）。"""
+
+    freezes = True
+    art = "fx/iceball"
+
+    def __init__(self, world, x, y, dir=1, **kw):
+        super().__init__(world, x, y, dir=dir, **kw)
+        self.life = 1.6
+
+    def update(self, world):
+        self.t += 1 / 60.0
+        self.life -= 1 / 60.0
+        if self.life <= 0:
+            self.kill()
+            return
+        if move_x(self.body, world.tilemap):
+            self.kill()
+            world.fx("splash", self.body.center)   # 撞墙碎成雪沫
+        self.body.vy = min(5.0, self.body.vy + 0.5)
+        c = move_y(self.body, world.tilemap)
+        if c.ground:
+            self.body.vy = -2.6
+
+    def draw(self, target, cam):
+        x, y = cam.to_screen(*self.body.center)
+        pygame.draw.circle(target, (150, 210, 255), (x, y), 3 * S)
+        pygame.draw.circle(target, (225, 245, 255), (x, y), S)

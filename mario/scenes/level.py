@@ -20,6 +20,7 @@ from ..core.tilemap import TileMap
 from ..core.tuning import TUNE
 from ..engine.camera import Camera
 from ..engine.ink import hexc
+from ..engine.res import RES_SCALE as S
 from ..engine.scene import Scene
 from ..game.player import Player
 
@@ -29,6 +30,7 @@ PIT_MARGIN = 24       # 掉出底部多少像素算坠亡
 
 class LevelScene(Scene):
     name = "level"
+    native = True      # 直接绘制到高清 buffer（2x），不走像素风离屏放大
 
     def __init__(self, app, data: dict, carry: dict | None = None):
         super().__init__(app)
@@ -49,6 +51,7 @@ class LevelScene(Scene):
         self.coins = carry.get("coins", data.get("coins", 0))
         self.lives = carry.get("lives", data.get("lives", 4))
         self.checkpoint = carry.get("checkpoint")        # (x, y) 像素
+        self.respawned = bool(carry.get("respawn"))       # 死亡重生的标记
         self._hits: list[pygame.Rect] = []
         self.next_level = ""
         self.next_spawn = ""
@@ -59,8 +62,9 @@ class LevelScene(Scene):
         self.goal = None           # 终点旗杆（win 序列用）
         self._decor_strips = None  # 背景贴片缓存（_decor 惰性生成）
         self._hud_txt = {}         # HUD 文本缓存（数值不变就不重渲染）
-        self.font = pygame.font.Font(None, 15)
-        self.big = pygame.font.Font(None, 24)
+        self.hints: list[dict] = []   # 底部按键/教学 toast
+        self.font = pygame.font.Font(None, 26)
+        self.big = pygame.font.Font(None, 44)
         self.fireworks_done = set()
 
     # -- world 小动词 ---------------------------------------------------------------------
@@ -77,6 +81,16 @@ class LevelScene(Scene):
 
     def fx(self, name: str, pos, **kw):
         self.fx_list.append(dict(name=name, x=pos[0], y=pos[1], t=0.0, **kw))
+
+    def hint(self, text: str, life: float = 3.5, key: str = "", delay: float = 0.0):
+        """底部 toast 提示。``key`` 非空则整个存档只显示一次。"""
+        prog = getattr(self.app, "progress", None) or {}
+        if key:
+            taught = prog.setdefault("taught", {})
+            if taught.get(key):
+                return
+            taught[key] = True
+        self.hints.append(dict(text=text, t=-delay, life=life))
 
     def shake(self, amount: float):
         self.camera.shake = max(self.camera.shake, amount)
@@ -177,6 +191,14 @@ class LevelScene(Scene):
                                          if k not in ("t", "x", "y")}))
         self.camera.center_on((px, py))
         self.camera.follow(self.player.rect, 0, snap=True)
+        if self.respawned:
+            # NSMB 气泡重生：从天上安全降落（对敌人完全免疫），落地给 2 秒无敌
+            self.player.start_bubble(py)
+        elif self.id == "1-1":
+            # 1-1 开场教学（每个存档一次）
+            self.hint("← → 移动 · K/空格 跳（按住跳更高）", life=6.0, key="move")
+            self.hint("Shift 跑 · X 旋转跳 · 空中 ↓+跳 下砸", life=6.0, key="moves2",
+                      delay=6.5)
         # 从检查点复活时刷掉已收集的大金币
         for a in self.actors:
             if type(a).__name__ == "StarCoin" and self._stars().get(a.idx):
@@ -227,6 +249,9 @@ class LevelScene(Scene):
         elif self.phase == "pipe":
             self._pipe_seq()
         self.actors = [a for a in self.actors if not a.removed]
+        for h in self.hints:
+            h["t"] += dt
+        self.hints = [h for h in self.hints if h["t"] < h["life"]]
         for f in self.fx_list:
             f["t"] += dt
             f["x"] += f.get("vx", 0.0)
@@ -334,10 +359,15 @@ class LevelScene(Scene):
         self.throw_item(player)
 
     def throw_item(self, player):
-        """火形态扔火球。"""
+        """火形态扔火球 / 冰形态扔冰球。"""
         if player.form == "fire":
             from ..game.objects import Fireball
             self.spawn(Fireball, player.body.x + player.body.facing * 6,
+                       player.body.y - player.body.h * 0.6, dir=player.body.facing)
+            self.sfx("throw")
+        elif player.form == "ice":
+            from ..game.objects import IceBall
+            self.spawn(IceBall, player.body.x + player.body.facing * 6,
                        player.body.y - player.body.h * 0.6, dir=player.body.facing)
             self.sfx("throw")
 
@@ -408,7 +438,7 @@ class LevelScene(Scene):
         else:
             self.app.scenes.fade_to(LevelScene(
                 self.app, self.data,
-                carry=dict(**self._carry(), checkpoint=self.checkpoint)))
+                carry=dict(**self._carry(), checkpoint=self.checkpoint, respawn=True)))
 
     def _win_seq(self):
         t = self.phase_t
@@ -503,7 +533,7 @@ class LevelScene(Scene):
     def _spike_check(self):
         """踩在尖刺上：受伤。"""
         p = self.player
-        if p.dying or p.invuln > 0 or p.star > 0 or p.mega_t > 0:
+        if p.dying or p.bubble or p.invuln > 0 or p.star > 0 or p.mega_t > 0:
             return
         feet = p.body.rect.move(0, 1).inflate(-4, 0)
         for _c, tile in self.tilemap.cells_in(feet):
@@ -589,8 +619,8 @@ class LevelScene(Scene):
     def _collisions(self):
         """玩家与 actor 接触：拾取、踩踏、弹簧、敌人伤害。"""
         p = self.player
-        if not p.alive:
-            return
+        if not p.alive or p.bubble:
+            return    # 气泡重生期间对所有交互免疫
         for a in list(self.actors):
             if a is p or a.removed or not a.alive or getattr(a, "carried", False):
                 continue
@@ -616,7 +646,8 @@ class LevelScene(Scene):
                 if hasattr(a, "hurt"):
                     a.hurt(self, p)
                 continue
-            if hasattr(a, "stomp") and (landing or getattr(a, "state", "") == "shell"):
+            if hasattr(a, "stomp") and (landing or getattr(a, "state", "") in
+                                       ("shell", "frozen")):
                 if a.stomp(self, p):
                     val = self.combo_score()
                     self.player.combo += 1           # 连击递增（落地/死亡处已清零）
@@ -635,14 +666,17 @@ class LevelScene(Scene):
                 # 食人花等不可踩的接触物：直接受伤
                 p.hurt(self)
 
-        # 玩家火球 vs 敌人
+        # 玩家火球/冰球 vs 敌人
         for proj in [a for a in self.actors if getattr(a, "tag", "") == "proj" and a.alive]:
             for foe in self.actors:
                 if foe is self.player or getattr(foe, "tag", "") in ("proj", "foe_proj") \
                         or not foe.alive or not foe.body or getattr(foe, "carried", False):
                     continue    # 玩家自己绝不能当敌人（否则扔火球瞬间崩溃）
                 if proj.rect.colliderect(foe.rect) and hasattr(foe, "hurt"):
-                    foe.hurt(self, proj)
+                    if getattr(proj, "freezes", False) and hasattr(foe, "freeze"):
+                        foe.freeze(self)      # 冰球：冻结而不是击杀
+                    else:
+                        foe.hurt(self, proj)
                     proj.kill()
                     break
 
@@ -684,6 +718,7 @@ class LevelScene(Scene):
                                         f["y"] - surf.get_height() / 2)
             target.blit(surf, (x, y))
         self._hud(target)
+        self._hints(target)
         if self.phase == "win" and self.phase_t > 1.2:
             self._clear_text(target)
         if self.paused:
@@ -692,11 +727,11 @@ class LevelScene(Scene):
     # -- 背景 / HUD ---------------------------------------------------------------------------
     def _sky(self, target):
         top, bottom = hexc(self.theme.sky[0])[:3], hexc(self.theme.sky[1])[:3]
-        h = self.app.base[1]
-        for y in range(0, h, 3):
+        w, h = self.app.base[0] * S, self.app.base[1] * S
+        for y in range(0, h, 3 * S):
             t = y / max(1, h - 1)
             row = tuple(round(a + (b - a) * t) for a, b in zip(top, bottom))
-            pygame.draw.rect(target, row, pygame.Rect(0, y, self.app.base[0], 3))
+            pygame.draw.rect(target, row, pygame.Rect(0, y, w, 3 * S))
 
     def _decor(self, target):
         """视差山丘、云、灌木——按滚动速度的一部分移动。
@@ -707,23 +742,25 @@ class LevelScene(Scene):
         if self._decor_strips is None:
             hill, hill_d, cloud, bush = (self.theme.hill, self.theme.hill_d,
                                          self.theme.cloud, self.theme.bush)
-            hills = pygame.Surface((96, 48), pygame.SRCALPHA)
-            c_ellipse(hills, (6, 20, 90, 48), hill)
-            c_ellipse(hills, (-20, 26, 60, 48), hill_d)
-            c_ellipse(hills, (56, 34, 92, 48), bush)
-            clouds = pygame.Surface((128, 40), pygame.SRCALPHA)
+            hills = pygame.Surface((96 * S, 48 * S), pygame.SRCALPHA)
+            for (bx, by, bw, bh), col in (
+                    ((6, 20, 90, 48), hill), ((-20, 26, 60, 48), hill_d),
+                    ((56, 34, 92, 48), bush)):
+                c_ellipse(hills, (bx * S, by * S, bw * S, bh * S), col)
+            clouds = pygame.Surface((128 * S, 40 * S), pygame.SRCALPHA)
             for cx, cy, r in ((20, 22, 9), (34, 18, 12), (52, 22, 8), (92, 14, 10)):
-                c_ellipse(clouds, (cx - r, cy - r * 0.7, cx + r, cy + r), cloud)
+                c_ellipse(clouds, ((cx - r) * S, (cy - r * 0.7) * S,
+                                   (cx + r) * S, (cy + r) * S), cloud)
             self._decor_strips = (hills, clouds)
         hills, clouds = self._decor_strips
         ox, _ = self.camera.offset
-        base = self.app.base[1]
+        base = self.app.base[1] * S
         for i in range(-1, self.app.base[0] // 96 + 2):
-            x = i * 96 - (ox * 0.28) % 96
-            target.blit(hills, (x, base - 48))
+            x = (i * 96 - (ox * 0.28) % 96) * S
+            target.blit(hills, (x, base - 48 * S))
         for i in range(-1, self.app.base[0] // 128 + 2):
-            x = i * 128 - (ox * 0.14) % 128
-            target.blit(clouds, (x, 12 + (i % 3) * 6))
+            x = (i * 128 - (ox * 0.14) % 128) * S
+            target.blit(clouds, (x, (12 + (i % 3) * 6) * S))
 
     def _hud_text(self, key, text, color):
         """文本只在内容变化时重渲染。"""
@@ -732,47 +769,71 @@ class LevelScene(Scene):
             ent = self._hud_txt[key] = ((text, color), self.font.render(text, True, color))
         return ent[1]
 
+    def _hints(self, target):
+        """底部中央的教学/按键 toast，多条纵向堆叠，带淡入淡出。"""
+        w, h = self.app.base[0] * S, self.app.base[1] * S
+        y = h - 14 * S
+        for ht in reversed(self.hints):
+            t, life = ht["t"], ht["life"]
+            if t < 0:
+                continue
+            alpha = max(0.0, min(1.0, t * 5.0, (life - t) * 2.0))
+            surf = self.font.render(ht["text"], True, (255, 255, 255))
+            pad = 5 * S
+            panel = pygame.Surface((surf.get_width() + pad * 2, surf.get_height() + 3 * S),
+                                   pygame.SRCALPHA)
+            panel.fill((12, 14, 30))
+            panel.set_alpha(int(205 * alpha))
+            surf.set_alpha(int(255 * alpha))
+            r = panel.get_rect(midbottom=(w // 2, y))
+            target.blit(panel, r)
+            target.blit(surf, (r.x + pad, r.y + 2 * S))
+            y -= surf.get_height() + 8 * S
+
     def _hud(self, target):
-        # 生命：小英雄头像 ×N
+        # 生命：小英雄头像 ×N（精灵天生 2x，直接 blit）
         hero = self.assets.sprite("hero.small.idle").frame(0)
-        target.blit(hero, (5, 4))
-        target.blit(self._hud_text("lives", f"x{self.lives}", (255, 255, 255)), (14, 6))
+        target.blit(hero, (5 * S, 4 * S))
+        target.blit(self._hud_text("lives", f"x{self.lives}", (255, 255, 255)),
+                    (14 * S, 5 * S))
         # 金币：图标 ×N
         coin = self.assets.sprite("item/coin").frame(self.time * 0.15)
-        target.blit(coin, (34, 4))
-        target.blit(self._hud_text("coins", f"x{self.coins:02d}", (255, 240, 150)), (44, 6))
+        target.blit(coin, (36 * S, 4 * S))
+        target.blit(self._hud_text("coins", f"x{self.coins:02d}", (255, 240, 150)),
+                    (48 * S, 5 * S))
         # 分数 / 时间
         target.blit(self._hud_text("score", f"SCORE {self.score:06d}", (255, 255, 255)),
-                    (62, 6))
+                    (70 * S, 5 * S))
         tint = (255, 120, 120) if self.time_left < 60 else (255, 255, 255)
         target.blit(self._hud_text("time", f"TIME {int(self.time_left):03d}", tint),
-                    (self.app.base[0] - 34, 6))
+                    (self.app.base[0] * S - 64 * S, 5 * S))
         # 大金币三槽
         stars = self._stars()
         for i in range(3):
             got = stars.get(i)
-            x = self.app.base[0] - 92 + i * 11
+            x = self.app.base[0] * S - 92 * S + i * 22 * S
             surf = self.assets.sprite("item/bigcoin").frame(0) if got else None
             if surf is not None:
-                s = pygame.transform.scale(surf, (9, 12))
-                target.blit(s, (x, 4))
+                s = pygame.transform.scale(surf, (18, 24))
+                target.blit(s, (x, 3 * S))
             else:
-                pygame.draw.circle(target, (90, 100, 120), (x + 4, 10), 4, 1)
+                pygame.draw.circle(target, (90, 100, 120), (x + 9, 12 * S), 8, 2)
 
     def _clear_text(self, target):
-        w, h = self.app.base
+        w, h = target.get_size()
         txt = self.big.render("COURSE CLEAR!", True, (255, 246, 210))
         shadow = self.big.render("COURSE CLEAR!", True, (40, 20, 60))
-        r = txt.get_rect(center=(w // 2, h // 2 - 6))
-        target.blit(shadow, r.move(1, 2))
+        r = txt.get_rect(center=(w // 2, h // 2 - 6 * S))
+        target.blit(shadow, r.move(S, 2 * S))
         target.blit(txt, r)
 
     def _pause(self, target):
-        veil = pygame.Surface(self.app.base, pygame.SRCALPHA)
+        veil = pygame.Surface(target.get_size(), pygame.SRCALPHA)
         veil.fill((10, 12, 24, 170))
         target.blit(veil, (0, 0))
         txt = self.big.render("PAUSED", True, (255, 255, 255))
-        target.blit(txt, txt.get_rect(center=(self.app.base[0] // 2, self.app.base[1] // 2)))
+        w, h = target.get_size()
+        target.blit(txt, txt.get_rect(center=(w // 2, h // 2)))
 
 
 def c_ellipse(surf, box, color):

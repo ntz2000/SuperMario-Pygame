@@ -1,8 +1,8 @@
 """Window, fixed-step loop, scene stack wiring, headless capture.
 
-Everything renders into a fixed internal buffer (default 384x216 art pixels) which is
-upscaled with nearest neighbour to the window size, so art keeps hard pixels at any
-resolution and the sim never depends on DPI.
+模拟与碰撞都在逻辑分辨率（base，默认 320x180 艺术像素）上进行；实际渲染缓冲
+是 base × RES_SCALE（默认 2 倍 = 640x360），精灵在生成时直接输出高清分辨率，
+窗口再整数放大——这样物理不变，画面高清（NSMB 是高清素材，16px 网格太糊）。
 """
 from __future__ import annotations
 
@@ -18,13 +18,15 @@ from .audio import from_wav
 from .input import Input, VirtualInput
 from .scene import SceneManager
 
+from .res import RES_SCALE
+
 FPS = 60
 STEP_MS = 1000.0 / FPS
 
 
 class App:
     def __init__(self, title="Super Mario", base=(384, 216), scale=3, headless=None,
-                 input=None, enable_cache: bool = True):
+                 input=None, enable_cache: bool = True, res_scale: int = RES_SCALE):
         if headless is None:
             headless = not os.environ.get("DISPLAY") and "SDL_VIDEODRIVER" not in os.environ
         self.headless = headless
@@ -38,9 +40,13 @@ class App:
             except pygame.error:
                 pass
         self.base = (int(base[0]), int(base[1]))
-        self.buffer = pygame.Surface(self.base, pygame.SRCALPHA)
+        self.res_scale = int(res_scale)
+        # 渲染缓冲：逻辑尺寸 × 倍率；精灵生成时就是高清分辨率
+        self.buffer = pygame.Surface((self.base[0] * self.res_scale,
+                                      self.base[1] * self.res_scale), pygame.SRCALPHA)
         flags = pygame.RESIZABLE | (pygame.NOFRAME if headless else 0)
-        self.window = pygame.display.set_mode((self.base[0] * scale, self.base[1] * scale), flags)
+        self.window = pygame.display.set_mode(
+            (self.buffer.get_width() * scale, self.buffer.get_height() * scale), flags)
         pygame.display.set_caption(title)
         self.clock = pygame.time.Clock()
         self.assets = Assets(enable_cache=enable_cache)

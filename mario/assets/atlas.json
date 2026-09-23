@@ -1,0 +1,31 @@
+{
+  "_comment": "真实 NSMB 素材映射：id -> sheet 上的裁剪矩形 [x,y,w,h] 列表（多帧=动画）。语义由颜色签名锁定，见 docs/ASSETS.md。",
+
+  "tile/ow-ground.top":  {"sheet": "tilesets_extract/0 Grassland.png", "rects": [[16, 112, 16, 16]]},
+  "tile/ow-ground.fill": {"sheet": "tilesets_extract/0 Grassland.png", "rects": [[64, 128, 16, 16]]},
+  "tile/ow-ground.cap":  {"sheet": "tilesets_extract/0 Grassland.png", "rects": [[32, 208, 16, 16]]},
+
+  "tile/ow-rock.top":  {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[16, 80, 16, 16]]},
+  "tile/ow-rock.fill": {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[48, 80, 16, 16]]},
+  "tile/ow-rock.cap":  {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[80, 80, 16, 16]]},
+
+  "tile/question.top":  {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[192, 0, 16, 16], [208, 0, 16, 16]]},
+  "tile/question.fill": {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[192, 0, 16, 16]]},
+  "tile/question.cap":  {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[192, 0, 16, 16]]},
+
+  "tile/brick.top":  {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[80, 0, 16, 16]]},
+  "tile/brick.fill": {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[80, 0, 16, 16]]},
+  "tile/brick.cap":  {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[80, 0, 16, 16]]},
+
+  "tile/used.top":  {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[48, 32, 16, 16]]},
+  "tile/used.fill": {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[48, 32, 16, 16]]},
+  "tile/used.cap":  {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[48, 32, 16, 16]]},
+
+  "tile/coin_block.top":  {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[240, 0, 16, 16]]},
+  "tile/coin_block.fill": {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[240, 0, 16, 16]]},
+  "tile/coin_block.cap":  {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[240, 0, 16, 16]]},
+
+  "tile/metal.top":  {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[0, 32, 16, 16]]},
+  "tile/metal.fill": {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[16, 32, 16, 16]]},
+  "tile/metal.cap":  {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[32, 32, 16, 16]]}
+}

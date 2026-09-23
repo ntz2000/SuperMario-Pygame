@@ -98,7 +98,7 @@ def level_1_1() -> dict:
     b.coins([64, 65, 66], 9)
     # 敌人
     b.add("goomba", 24, 12).add("goomba", 33, 12).add("goomba", 34, 12)
-    b.add("goomba", 42, 12).add("koopa", 49, 12, dir=-1)
+    b.add("goomba", 42, 12).add("koopa", 40, 12, dir=-1)   # 朝远离检查点的方向巡逻
     b.add("goomba", 55, 12).add("goomba", 56, 12)
     b.add("red_koopa", 74, 12).add("piranha", 57, 9, phase=0.4)
     b.add("goomba", 90, 6)
@@ -146,7 +146,7 @@ def level_1_2() -> dict:
     b.put(12, 6, "m")                          # 迷你蘑菇块
     b.coins([10, 11, 12, 13, 14], 8).coins([30, 31, 32, 33, 34], 7)
     b.add("goomba", 16, 12).add("buzzy", 26, 12).add("buzzy", 27, 12)
-    b.add("spiny", 46, 12).add("red_koopa", 50, 12)
+    b.add("spiny", 46, 12, dir=1).add("red_koopa", 50, 12, dir=1)   # 背对检查点
     b.add("piranha", 36, 10, phase=0.2)
     b.add("platform", 20, 10, to=(3, 0), period=3.2)   # 跨坑移动平台
     b.add("spring", 24, 12)                    # 弹簧垫
@@ -177,9 +177,10 @@ def level_1_3() -> dict:
     b.add("cheep", 42, 7, dir=1)
     b.add("cheep", 60, 9, dir=-1)
     b.add("goomba", 12, 9)                    # 岛上的敌人
-    b.add("goomba", 33, 8)
+    b.add("goomba", 35, 8, dir=1)             # 远离检查点（33）方向走
     b.put(32, 5, "?")
     b.put(33, 5, "!")
+    b.put(55, 5, "f")   # 冰之花块
     b.add("starcoin", 24, 5, idx=0)            # 水下高处
     b.add("starcoin", 48, 5, idx=1)
     b.add("starcoin", 76, 5, idx=2)
@@ -205,7 +206,7 @@ def level_castle() -> dict:
     b.put(41, 8, "C")                          # 多币块
     b.add("platform", 24, 10, to=(4, 0), period=3.6)   # 跨尖刺坑
     b.add("spiny", 20, 12).add("buzzy", 34, 12)
-    b.add("spiny", 46, 12)
+    b.add("spiny", 46, 12, dir=1)   # 检查点(36)在左，让它朝右走
     b.add("goomba", 12, 12).add("goomba", 13, 12)
     b.add("bowser", 58, 12)                    # Boss
     b.add("checkpoint", 36, 12)

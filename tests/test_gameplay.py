@@ -282,6 +282,52 @@ class TestFlow:
         assert level.player.alive, "扔火球不能崩或自杀"
         assert not g.alive, "火球应能烧死敌人"
 
+    def test_ice_flower_freezes_and_shatters(self, app, level):
+        """冰之花（NSMB Wii）：吃花→冰形态→冰球冻结敌人→踩碎冰块。"""
+        from mario.game.enemies import Goomba, Bowser
+        from mario.game.objects import IceFlower
+
+        level.spawn(IceFlower, level.player.body.x, level.player.body.y - 4)
+        run(level, 3)
+        assert level.player.form == "ice", "应变成冰形态"
+        g = level.spawn(Goomba, level.player.body.x + 60, 13 * TILE)
+        g.awake = True
+        level.player.body.facing = 1
+        app.input.press("action")
+        for _ in range(60):
+            level.update()
+            app.input.advance()
+            level.player.body.facing = 1
+        assert g.state == "frozen", "冰球应冻结敌人"
+        # 踩碎
+        p = level.player
+        p.body.x = g.body.x
+        p.body.y = g.body.y - 10
+        p.body.vy = 2
+        level._collisions()
+        assert not g.alive, "踩冻结敌人应碎冰"
+        # Boss 免疫
+        bow = level.spawn(Bowser, 100 * TILE, 13 * TILE)
+        bow.awake = True
+        bow.freeze(level)
+        assert bow.state != "frozen", "Bowser 冻不住"
+
+    def test_frozen_expires_and_hint_fires(self, app, level):
+        from mario.game.enemies import Goomba
+        from mario.game.objects import FireFlower
+
+        g = level.spawn(Goomba, 60 * TILE, 13 * TILE)
+        g.awake = True
+        g.state = "frozen"
+        g.frozen_t = 0.05
+        run(level, 10)
+        assert g.state == "walk", "冰冻到期应解冻"
+        # 火花提示系统
+        level.spawn(FireFlower, level.player.body.x, level.player.body.y - 4)
+        run(level, 3)
+        assert level.player.form == "fire"
+        assert any("火球" in h["text"] for h in level.hints), "拾取火花应有按键提示"
+
     def test_combo_increments(self, app, level):
         """不落地连踩：连击分递增，连击表走完后给 1UP。"""
         from mario.game.enemies import Goomba
@@ -391,6 +437,43 @@ class TestFlow:
         level.time_left = 0.01
         run(level, 5)
         assert level.phase == "death"
+
+    def test_respawn_bubble_safe(self, app, level):
+        """NSMB 气泡重生：死→气泡降落→落地无敌→不被出生点敌人秒杀（回归锁定）。"""
+        from mario.game.enemies import Koopa
+
+        # 检查点旁放一只朝检查点巡逻的龟（历史 bug 的元凶布局）
+        cp = next(a for a in level.actors if type(a).__name__ == "CheckpointFlag")
+        koopa = level.spawn(Koopa, cp.body.x + 16, 13 * TILE, dir=-1)
+        koopa.awake = True
+        p = level.player
+        p.body.x, p.body.y = cp.body.x, cp.body.y     # 触发检查点
+        run(level, 3)
+        assert level.checkpoint is not None
+        p.body.x = 63 * TILE + 8                       # 检查点之后的坑
+        run(level, 120)                                # 死亡序列
+        assert level.phase == "death"
+        run(level, 60)                                 # 等待重生场景换入（fade 期间不更新）
+        # fade_to 已排队：直接构造新场景验证气泡
+        app2 = app
+        new = LevelScene(app2, level.data,
+                         carry=dict(score=5, coins=0, lives=3,
+                                    checkpoint=level.checkpoint, respawn=True))
+        new.on_enter(id="1-1")
+        p2 = new.player
+        assert p2.bubble is True, "重生应以气泡开始"
+        assert p2.body.y < p2._bubble_ground - 100, "气泡应从高处开始"
+        for _ in range(200):                           # 等气泡降落
+            new.update()
+            new.input.advance()
+        assert p2.bubble is False, "气泡应已落地"
+        assert p2.invuln > 0, "落地后应有无敌帧"
+        assert p2.alive and new.phase == "play"
+        # 落地 3 秒无敌期间巡逻龟不能秒杀
+        for _ in range(180):
+            new.update()
+            new.input.advance()
+        assert new.phase == "play", "无敌期内不应死亡"
 
 
 class TestScenes:

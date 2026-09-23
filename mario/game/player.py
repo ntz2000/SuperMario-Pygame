@@ -2,15 +2,18 @@
 
 移动手感由 :mod:`mario.core.tuning` 里的数值决定：走/跑各有极速，急刹比滑行
 减速更狠，上升中按住跳跃减轻重力，跳跃输入有预输入缓冲，起跳前踩空有土狼时间。
-NSMB 的招牌动作也在这里：墙跳、旋转跳、下砸，以及可搬运的龟壳。
+NSMB 的招牌动作也在这里：墙跳、旋转跳、下砸、气泡重生，以及可搬运的龟壳。
 """
 from __future__ import annotations
+
+import math
 
 import pygame
 
 from ..core.actor import Actor
 from ..core.physics import move_x, move_y
 from ..core.tuning import TUNE
+from ..engine.res import RES_SCALE as S
 
 # 星星无敌期间的循环染色（叠加增亮，制造经典彩虹闪烁）
 STAR_TINTS = ((90, 0, 0), (0, 90, 0), (0, 40, 90), (90, 60, 0))
@@ -44,16 +47,32 @@ class Player(Actor):
         self.dying = False
         self.locked = False     # 过场脚本控制（旗杆等），屏蔽输入
         self.combo = 0          # 踩踏连击数，落地清零
+        self.bubble = False     # 气泡重生（NSMB）：从天上安全降落到出生点
+        self._bubble_ground = 0.0
+        self._bubble_t = 0.0
+
+    def start_bubble(self, ground_y: float):
+        """进入气泡重生：从出生点上方 150px 开始降落，落地破泡给 2 秒无敌。
+
+        修复"重生即死"：重生瞬间对敌人完全免疫（连碰撞都不发生），
+        落地后还有无敌帧，不会再被巡逻到出生点的敌人秒杀。
+        """
+        self.bubble = True
+        self.locked = True
+        self.body.y = ground_y - 150.0
+        self.body.vx = self.body.vy = 0.0
+        self._bubble_ground = ground_y
+        self._bubble_t = 0.0
 
     # -- 形态 ---------------------------------------------------------------------------
     @property
     def height(self) -> int:
         return {"mini": TUNE.mini_h, "small": TUNE.small_h,
-                "super": TUNE.super_h, "fire": TUNE.super_h,
+                "super": TUNE.super_h, "fire": TUNE.super_h, "ice": TUNE.super_h,
                 "mega": TUNE.mega_h}[self.form]
 
     def set_form(self, form: str, world=None):
-        if form not in ("mini", "small", "super", "fire", "mega"):
+        if form not in ("mini", "small", "super", "fire", "ice", "mega"):
             form = "small"
         self.form = form
         self.art = f"hero.{form}"
@@ -67,7 +86,7 @@ class Player(Actor):
             world.sfx("power-up")
 
     def shrink(self, world):
-        if self.form in ("super", "fire"):
+        if self.form in ("super", "fire", "ice"):
             self.set_form("small")
             self.invuln = 1.4
             world.sfx("shrink")
@@ -97,6 +116,23 @@ class Player(Actor):
 
     # -- 每帧 -----------------------------------------------------------------------------
     def update(self, world):
+        if self.bubble:
+            # 气泡重生：无视地形与敌人，左右轻摆地缓缓降落
+            self.t += 1 / 60.0
+            self._bubble_t += 1 / 60.0
+            self.body.x += math.sin(self._bubble_t * 3.0) * 0.35
+            self.body.y = min(self._bubble_ground, self.body.y + 1.2)
+            self.set_anim("swim")
+            if self.body.y >= self._bubble_ground:
+                self.bubble = False
+                self.locked = False
+                self.invuln = 3.0     # 落地后再给 3 秒无敌，应付身边的敌人
+                self.body.on_ground = True
+                self.was_on_ground = True
+                world.fx("pop", self.body.center)
+                world.fx("sparkle", (self.body.x, self.body.y - 8))
+                world.sfx("reveal")
+            return
         if self.dying:
             # 死亡抛物线：无视地形，先弹起再坠落
             self.t += 1 / 60.0
@@ -317,6 +353,9 @@ class Player(Actor):
 
     # -- 绘制 ------------------------------------------------------------------------------
     def draw(self, target, cam):
+        if self.bubble:
+            self._draw_bubble(target, cam)
+            return
         if self.invuln > 0 and int(self.t * 30) % 2:
             return
         surf = self.frame_surf()
@@ -336,3 +375,20 @@ class Player(Actor):
         target.blit(surf, (x, y))
         if self.held is not None:
             self.held.draw(target, cam)
+
+    def _draw_bubble(self, target, cam):
+        """重生气泡：半透明的角色泡在圆泡泡里，泡泡随呼吸轻微缩放。"""
+        surf = self.frame_surf()
+        if self.flip:
+            surf = pygame.transform.flip(surf, True, False)
+        surf = surf.copy()
+        surf.set_alpha(150)      # 泡里的角色半透明
+        cx, cy = cam.to_screen(self.body.x, self.body.y - self.body.h / 2)
+        w, h = surf.get_width(), surf.get_height()
+        target.blit(surf, (cx - w / 2, cy - h / 2))
+        r = max(w, h) * 0.78 * (1.0 + math.sin(self._bubble_t * 5.0) * 0.03)
+        pygame.draw.circle(target, (210, 235, 255, 90), (cx, cy), int(r), 2 * S)
+        pygame.draw.circle(target, (255, 255, 255, 60), (cx, cy), int(r - 2 * S), S)
+        # 左上高光弧
+        pygame.draw.circle(target, (255, 255, 255),
+                           (cx - int(r * 0.45), cy - int(r * 0.5)), 2 * S)

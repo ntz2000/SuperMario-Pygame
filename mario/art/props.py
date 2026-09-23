@@ -211,6 +211,34 @@ register("item/coin", coin, frames=4, finish={"outline": 1.0})
 for _k in ("super", "1up", "mega", "mini"):
     register(f"item/{_k}", mushroom, variant=_k, finish={"outline": 1.0})
 register("item/fire_flower", fire_flower, frames=2, finish={"outline": 1.0})
+
+
+def ice_flower(frame: int = 0):
+    """冰之花：白瓣蓝芯（NSMB Wii）。"""
+    c = Canvas((14, 16))
+    ICE = hexc("#bfe2ff")
+    c.line([(7, 15), (7, 8)], 2.2, hexc("#9fc8f0"))
+    c.pie((2, 10, 7, 14), 90, 250, hexc("#9fc8f0"))
+    for i in range(6):
+        a = i * math.pi / 3 + frame * 0.2
+        c.ellipse((7 + math.cos(a) * 3 - 1.8, 4 + math.sin(a) * 3 - 1.8,
+                   7 + math.cos(a) * 3 + 1.8, 4 + math.sin(a) * 3 + 1.8), hexc("#8fc8f8"))
+    c.ellipse((5, 2.5, 9, 6.5), hexc("#e6f6ff"))
+    return c
+
+
+register("item/ice_flower", ice_flower, frames=2, finish={"outline": 1.0})
+
+
+def iceball(frame: int = 0):
+    """冰球：蓝白滚珠。"""
+    c = Canvas((8, 8))
+    c.ellipse((0.5, 0.5, 7.5, 7.5), hexc("#8fc8f8"))
+    c.ellipse((1.5, 1.5, 5, 5), hexc("#e6f6ff"))
+    return c
+
+
+register("fx/iceball", iceball, frames=2, finish={"outline": 0.8})
 register("item/star", star, frames=2, finish={"outline": 1.0})
 register("item/spring", spring, frames=2, finish={"outline": 1.0})
 register("fx/coin", coin, frames=4, finish={"outline": 1.0})
