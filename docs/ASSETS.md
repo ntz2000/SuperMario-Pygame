@@ -54,8 +54,43 @@
 | 6 | 357-397 | 朝右姿势行（swim 候选） | hero.super.swim |
 | 7-9 | — | 场景物件混入（管道/门，非马里奥） | 不用 |
 
-hero.small/mini/mega 保持程序化生成（表里没有对应帧）。
-`hero.fire.*/hero.ice.*` 由 `hero.super.*` 自动调色派生。
+hero.small/mini/mega 保持程序化生成（表里没有对应帧——33px = Super Mario，
+与 mariowiki MariostandingNSMB.png 16x33 吻合；Small 是 15x21）。
+`hero.fire.*/hero.ice.*` 由 `hero.super.*` 自动调色派生（原版 NSMBDS 的
+PowerupState: Small=0/Super=1/Fire=2/Mega=3/Mini=4/Shell=5，Fire 就是 Super
+换白贴图，无独立动画——反编译 PlayerBase.hpp 证实）。
+
+## 原版动画名表（NSMBDS ROM 提取，来自 MvsL 重制版 FBX）
+
+游戏内动画的**原始命名与精确帧数**（任天堂 EAD 日式英语缩写，同人起不出这种名），
+映射 TSR 表时对帧数的黄金参照：
+
+| 动画名 | 帧数 | 语义 | 游戏内 ID |
+|---|---|---|---|
+| wait | 62 | 站立呼吸 | 0 |
+| walk | 25 | 行走 | 1 |
+| run | 25 | 奔跑 | — |
+| b_dash / b_dash2 | 24 | 刹车急停 | — |
+| jump / jumped | 5 / 4 | 跳 / 下落 | 5 / 6 |
+| 2jump1/2jumped | 5/14 | 二段跳 | — |
+| roll_jump | 14 | 三段跳翻滚 | — |
+| spin_jump | 2 | 旋转跳 | — |
+| wsld | 1 | 贴墙侧移 | — |
+| swim / swim_walk | 6 / 24 | 游泳 | — |
+| paddle_1/paddle_2 | 8/7 | 划水 | — |
+| stoop / low_walk | 2 / 23 | 蹲 / 蹲行 | — |
+| fire_at | 6 | 投掷火球 | — |
+| carry_throw | 11 | 投掷携带物 | — |
+| shell_walk | 24 | 龟壳形态走 | — |
+| dead / dead_pose | 65 / 10 | 死亡 | — |
+| goal_puton_cap | 51 | 通关戴帽 | 99=win |
+| scale_up | 38 | 变身放大 | — |
+
+（Newer-Team hack 代码证实的 ID：0=idle、1=walk、5=jump、6=fall、
+105/106=路易吉专属跳/落、141=旗杆、17=矿车、18=挥锤）
+
+**walk 验证修正**（V4.1）：agent 逐帧渲染确认 walk 实际段在 x652-1142
+（帧 #25-#42，宽 17-26 呈迈腿循环），V3 误用了 x8-549 段（转身/伸手杂项）。
 
 ## 敌人真实帧（V3 完成）
 
