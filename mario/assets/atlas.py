@@ -45,15 +45,57 @@ def sheet_surface(name: str) -> pygame.Surface:
     return _sheet_cache[name]
 
 
+# 调色板交换定义（NSMB 原版 fire/ice 就是调色板交换，不是独立美术）
+_REMAPS = {
+    "fire": {  # 红(180,0,0)→白, 蓝背带(12,60,159)→红：经典火马里奥
+        (180, 0, 1): (242, 242, 242),
+        (1, 1, 1): None,
+    },
+    "ice": {   # 红→淡蓝, 蓝背带→深蓝：冰马里奥
+        (180, 0, 1): (150, 200, 255),
+        (12, 60, 159): (30, 80, 200),
+    },
+}
+
+
+def remap_frame(surf, form: str):
+    """把真实帧的红色域换成 fire/ice 配色（返回新 Surface）。"""
+    import numpy as _np
+    arr = _np.frombuffer(pygame.image.tobytes(surf, "RGBA"), dtype="uint8").copy()
+    arr = arr.reshape(surf.get_height(), surf.get_width(), 4).astype(int)
+    red = (arr[..., 0] > 110) & (arr[..., 0] > arr[..., 1] + 40) & (arr[..., 0] > arr[..., 2] + 40)
+    blue = (arr[..., 2] > 110) & (arr[..., 2] > arr[..., 0] + 30)
+    if form == "fire":
+        arr[red, 0], arr[red, 1], arr[red, 2] = 242, 242, 242   # 红衣→白
+        arr[blue, 0], arr[blue, 1], arr[blue, 2] = 224, 34, 34   # 蓝背带→红
+    elif form == "ice":
+        arr[red, 0], arr[red, 1], arr[red, 2] = 140, 195, 255    # 红衣→冰蓝
+        arr[blue, 0], arr[blue, 1], arr[blue, 2] = 20, 90, 180   # 背带→深蓝
+    return pygame.image.frombuffer(arr.astype("uint8").tobytes(),
+                                   surf.get_size(), "RGBA")
+
+
 def atlas_asset(id: str, res_scale: int):
-    """从图集裁剪一个资产。返回 [(surface, ...frames)] 或 None（id 不在图集）。"""
+    """从图集裁剪一个资产。返回 [surface, ...] 或 None（id 不在图集）。
+
+    id 支持 "hero.fire.walk" 这类派生形式：fire/ice 是 super 的调色板换色
+    （NSMB 原版同款做法），命中 "hero.super.<anim>" 条目后按 form 重着色。
+    """
     entry = ATLAS.get(id)
+    remap = ""
     if not entry:
-        return None
+        parts = id.split(".")          # hero.<form>.<anim>
+        if len(parts) == 3 and parts[1] in ("fire", "ice"):
+            entry = ATLAS.get(f"hero.super.{parts[2]}")
+            remap = parts[1]
+        if not entry:
+            return None
     sheet = sheet_surface(entry["sheet"])
     frames = []
     for x, y, w, h in entry["rects"]:
         cell = sheet.subsurface(pygame.Rect(x, y, w, h))
+        if remap:
+            cell = remap_frame(cell, remap)
         if res_scale != 1:
             cell = pygame.transform.scale(cell, (w * res_scale, h * res_scale))
         frames.append(cell)

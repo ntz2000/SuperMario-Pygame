@@ -38,13 +38,36 @@
 | `tile/coin_block.*` | Jyotyu [15,0] | 多币块 |
 | `tile/metal.*` | Jyotyu 行 2 灰绿 | 金属块 |
 
-已下载未映射（语义不明，后续 agent 可扩展）：
-- `nsmbds_mario.png`（1647×961，436 帧）——Mario 全形态姿势表。**映射难点**：
-  需要逐帧识别 idle/walk/run/jump/skid/swim/spin 语义；表为天蓝底色 (153,217,234)，
-  剥离后按行带×列切分。帧结构分析数据在 `sheets/mario_sprites.json`
-- `nsmbds_goomba.png` / `nsmbds_koopa_green/red.png`（GIF 逐列动画）/ `nsmbds_spiny.png`
-- `tilesets_extract/` 全套（草原/地下/城堡/水下/雪原/火山……23 套 16px 瓦片集）
-- `nsmbds_tiles_grassland.png`（2566×2053）、`nsmbds_starcoin.png`（1079×518）
+## Mario 姿势表映射（V3 完成，语义由 TSR 2017 年评论 + IoU 闭环分析锁定）
+
+**关键事实**（TSR sheet 31487 评论区 + 像素分析）：这张 436 帧表**全部是超级马里奥**
+（没有 fire/mini/mega 独立帧）；fire/ice 用调色板交换实现（`atlas.py remap_frame`，
+与 NSMB 原版做法一致）。行带语义：
+
+| 行带 | y 范围 | 语义 | 接入 id |
+|---|---|---|---|
+| 0 | 10-43 | idle 呼吸循环（79 帧） | hero.super.idle（6 帧） |
+| 1 | 50-84 | walk 直立行走（前 25 帧平滑段） | hero.super.walk（8 帧） |
+| 2 | 89-129 | 姿势混合（帧 2-7 = skid 急刹） | hero.super.skid |
+| 3 | 131-172 | jump（帧 0-17，高 41 手臂高举）+ duck（28-59） | hero.super.jump / fall / crawl |
+| 4 | 180-216 | run 奔跑循环（71 帧闭环） | hero.super.run（8 帧） |
+| 6 | 357-397 | 朝右姿势行（swim 候选） | hero.super.swim |
+| 7-9 | — | 场景物件混入（管道/门，非马里奥） | 不用 |
+
+hero.small/mini/mega 保持程序化生成（表里没有对应帧）。
+`hero.fire.*/hero.ice.*` 由 `hero.super.*` 自动调色派生。
+
+## 敌人真实帧（V3 完成）
+
+- `enemy/goomba`：GIF 逐列 8 帧 walk（17x18，等距同尺寸=动画序列，语义确定）
+- `enemy/koopa` / `enemy/red_koopa`：前 12 帧 walk（30px）+ 绿色小帧段=龟壳
+- `enemy/shell` / `enemy/shell_red`：3 帧
+
+## 已下载未映射（后续 agent 可扩展）：
+- `nsmbds_spiny.png`（509x302）——刺龟，语义同 koopa（逐列动画）
+- `nsmbds_starcoin.png`（1079×518）——大金币表
+- `nsmbds_tiles_grassland.png`（2566×2053）——草原全量瓦片（含背景装饰）
+- `tilesets_extract/` 其余主题（地下/城堡/水下/雪原/火山）尚未接入 atlas
 
 ## 素材下载方法（复现）
 

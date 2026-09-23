@@ -21,16 +21,19 @@ class Tuning:
     max_fall: float = 7.0
     # --- ground movement ---------------------------------------------------------------
     # 手感基准：SMB/NSMB 的地面加速度约 0.036~0.05 px/f²，比"一按就窜出去"的
-    # 0.11+ 沉得多；空中转向能力被压到 1/3，跳跃弧线因此"有承诺感"而不飘。
+    # 0.11+ 沉得多；空中留有 0.42 的补救控制（起跳晚了能拉回来，但不至于飘）。
     walk_max: float = 1.30
     run_max: float = 2.06
-    accel_walk: float = 0.048
-    accel_run: float = 0.075
+    accel_walk: float = 0.055
+    accel_run: float = 0.090
     decel: float = 0.10
     skid_decel: float = 0.26
-    air_control: float = 0.30
+    air_control: float = 0.42
     # --- jump --------------------------------------------------------------------------
-    jump_vel: float = 7.4
+    # 满跳 ~4.7 格；跑动起跳（|vx| 超过走速）另有 ×1.06 加成 → 跑跳 ~5.1 格、
+    # 距离 ~4.9 格，助跑轻松越过 3 格坑（NSMB 手感：跑跳比站跳更高更远）。
+    jump_vel: float = 7.55
+    run_jump_bonus: float = 1.06
     coyote: int = 6                # 离开平台后的宽限帧数
     jump_buffer: int = 7           # 按键预输入缓冲帧数
     wall_slide_speed: float = 1.35  # 贴墙下滑的落速上限（墙跳的前提）

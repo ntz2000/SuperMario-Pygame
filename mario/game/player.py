@@ -245,7 +245,9 @@ class Player(Actor):
                 self.climbing = False
                 world.sfx("jump")
             elif ground:
-                b.vy = -TUNE.jump_vel * jump_scale
+                # 跑动起跳加成（NSMB：跑跳比站跳更高更远，助跑有意义）
+                run_boost = TUNE.run_jump_bonus if abs(b.vx) > TUNE.walk_max else 1.0
+                b.vy = -TUNE.jump_vel * run_boost * jump_scale
                 self._coyote = 0.0
                 world.sfx("mini-jump" if self.form == "mini" else "jump")
             elif self._wall_coyote > 0:

@@ -1,31 +1,749 @@
 {
-  "_comment": "真实 NSMB 素材映射：id -> sheet 上的裁剪矩形 [x,y,w,h] 列表（多帧=动画）。语义由颜色签名锁定，见 docs/ASSETS.md。",
-
-  "tile/ow-ground.top":  {"sheet": "tilesets_extract/0 Grassland.png", "rects": [[16, 112, 16, 16]]},
-  "tile/ow-ground.fill": {"sheet": "tilesets_extract/0 Grassland.png", "rects": [[64, 128, 16, 16]]},
-  "tile/ow-ground.cap":  {"sheet": "tilesets_extract/0 Grassland.png", "rects": [[32, 208, 16, 16]]},
-
-  "tile/ow-rock.top":  {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[16, 80, 16, 16]]},
-  "tile/ow-rock.fill": {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[48, 80, 16, 16]]},
-  "tile/ow-rock.cap":  {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[80, 80, 16, 16]]},
-
-  "tile/question.top":  {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[192, 0, 16, 16], [208, 0, 16, 16]]},
-  "tile/question.fill": {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[192, 0, 16, 16]]},
-  "tile/question.cap":  {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[192, 0, 16, 16]]},
-
-  "tile/brick.top":  {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[80, 0, 16, 16]]},
-  "tile/brick.fill": {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[80, 0, 16, 16]]},
-  "tile/brick.cap":  {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[80, 0, 16, 16]]},
-
-  "tile/used.top":  {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[48, 32, 16, 16]]},
-  "tile/used.fill": {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[48, 32, 16, 16]]},
-  "tile/used.cap":  {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[48, 32, 16, 16]]},
-
-  "tile/coin_block.top":  {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[240, 0, 16, 16]]},
-  "tile/coin_block.fill": {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[240, 0, 16, 16]]},
-  "tile/coin_block.cap":  {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[240, 0, 16, 16]]},
-
-  "tile/metal.top":  {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[0, 32, 16, 16]]},
-  "tile/metal.fill": {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[16, 32, 16, 16]]},
-  "tile/metal.cap":  {"sheet": "tilesets_extract/Tileset 0 (Jyotyu).png", "rects": [[32, 32, 16, 16]]}
+ "_comment": "真实 NSMB 素材映射：id -> sheet 上的裁剪矩形 [x,y,w,h] 列表（多帧=动画）。语义由颜色签名锁定，见 docs/ASSETS.md。",
+ "tile/ow-ground.top": {
+  "sheet": "tilesets_extract/0 Grassland.png",
+  "rects": [
+   [
+    16,
+    112,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/ow-ground.fill": {
+  "sheet": "tilesets_extract/0 Grassland.png",
+  "rects": [
+   [
+    64,
+    128,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/ow-ground.cap": {
+  "sheet": "tilesets_extract/0 Grassland.png",
+  "rects": [
+   [
+    32,
+    208,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/ow-rock.top": {
+  "sheet": "tilesets_extract/Tileset 0 (Jyotyu).png",
+  "rects": [
+   [
+    16,
+    80,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/ow-rock.fill": {
+  "sheet": "tilesets_extract/Tileset 0 (Jyotyu).png",
+  "rects": [
+   [
+    48,
+    80,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/ow-rock.cap": {
+  "sheet": "tilesets_extract/Tileset 0 (Jyotyu).png",
+  "rects": [
+   [
+    80,
+    80,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/question.top": {
+  "sheet": "tilesets_extract/Tileset 0 (Jyotyu).png",
+  "rects": [
+   [
+    192,
+    0,
+    16,
+    16
+   ],
+   [
+    208,
+    0,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/question.fill": {
+  "sheet": "tilesets_extract/Tileset 0 (Jyotyu).png",
+  "rects": [
+   [
+    192,
+    0,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/question.cap": {
+  "sheet": "tilesets_extract/Tileset 0 (Jyotyu).png",
+  "rects": [
+   [
+    192,
+    0,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/brick.top": {
+  "sheet": "tilesets_extract/Tileset 0 (Jyotyu).png",
+  "rects": [
+   [
+    80,
+    0,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/brick.fill": {
+  "sheet": "tilesets_extract/Tileset 0 (Jyotyu).png",
+  "rects": [
+   [
+    80,
+    0,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/brick.cap": {
+  "sheet": "tilesets_extract/Tileset 0 (Jyotyu).png",
+  "rects": [
+   [
+    80,
+    0,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/used.top": {
+  "sheet": "tilesets_extract/Tileset 0 (Jyotyu).png",
+  "rects": [
+   [
+    48,
+    32,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/used.fill": {
+  "sheet": "tilesets_extract/Tileset 0 (Jyotyu).png",
+  "rects": [
+   [
+    48,
+    32,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/used.cap": {
+  "sheet": "tilesets_extract/Tileset 0 (Jyotyu).png",
+  "rects": [
+   [
+    48,
+    32,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/coin_block.top": {
+  "sheet": "tilesets_extract/Tileset 0 (Jyotyu).png",
+  "rects": [
+   [
+    240,
+    0,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/coin_block.fill": {
+  "sheet": "tilesets_extract/Tileset 0 (Jyotyu).png",
+  "rects": [
+   [
+    240,
+    0,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/coin_block.cap": {
+  "sheet": "tilesets_extract/Tileset 0 (Jyotyu).png",
+  "rects": [
+   [
+    240,
+    0,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/metal.top": {
+  "sheet": "tilesets_extract/Tileset 0 (Jyotyu).png",
+  "rects": [
+   [
+    0,
+    32,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/metal.fill": {
+  "sheet": "tilesets_extract/Tileset 0 (Jyotyu).png",
+  "rects": [
+   [
+    16,
+    32,
+    16,
+    16
+   ]
+  ]
+ },
+ "tile/metal.cap": {
+  "sheet": "tilesets_extract/Tileset 0 (Jyotyu).png",
+  "rects": [
+   [
+    32,
+    32,
+    16,
+    16
+   ]
+  ]
+ },
+ "enemy/goomba": {
+  "sheet": "nsmbds_goomba.png",
+  "rects": [
+   [
+    7,
+    14,
+    24,
+    32
+   ],
+   [
+    7,
+    46,
+    24,
+    64
+   ],
+   [
+    8,
+    77,
+    24,
+    96
+   ],
+   [
+    7,
+    109,
+    23,
+    128
+   ],
+   [
+    7,
+    142,
+    23,
+    160
+   ],
+   [
+    7,
+    173,
+    24,
+    192
+   ],
+   [
+    6,
+    205,
+    22,
+    224
+   ],
+   [
+    6,
+    237,
+    23,
+    256
+   ]
+  ]
+ },
+ "enemy/koopa": {
+  "sheet": "nsmbds_koopa_green.png",
+  "rects": [
+   [
+    0,
+    2,
+    30,
+    32
+   ],
+   [
+    0,
+    33,
+    30,
+    65
+   ],
+   [
+    0,
+    67,
+    30,
+    96
+   ],
+   [
+    0,
+    99,
+    30,
+    128
+   ],
+   [
+    0,
+    131,
+    30,
+    160
+   ],
+   [
+    0,
+    164,
+    30,
+    192
+   ],
+   [
+    0,
+    195,
+    30,
+    225
+   ],
+   [
+    0,
+    226,
+    30,
+    256
+   ],
+   [
+    0,
+    258,
+    30,
+    288
+   ],
+   [
+    0,
+    289,
+    30,
+    320
+   ],
+   [
+    0,
+    323,
+    30,
+    352
+   ],
+   [
+    0,
+    355,
+    30,
+    384
+   ]
+  ]
+ },
+ "enemy/shell": {
+  "sheet": "nsmbds_koopa_green.png",
+  "rects": [
+   [
+    0,
+    451,
+    16,
+    480
+   ],
+   [
+    0,
+    482,
+    16,
+    512
+   ],
+   [
+    0,
+    513,
+    16,
+    528
+   ]
+  ]
+ },
+ "enemy/red_koopa": {
+  "sheet": "nsmbds_koopa_red.png",
+  "rects": [
+   [
+    0,
+    2,
+    29,
+    33
+   ],
+   [
+    0,
+    34,
+    29,
+    64
+   ],
+   [
+    0,
+    67,
+    29,
+    96
+   ],
+   [
+    0,
+    99,
+    29,
+    128
+   ],
+   [
+    0,
+    132,
+    29,
+    160
+   ],
+   [
+    0,
+    164,
+    29,
+    193
+   ],
+   [
+    0,
+    195,
+    29,
+    224
+   ],
+   [
+    0,
+    227,
+    29,
+    256
+   ],
+   [
+    0,
+    257,
+    29,
+    288
+   ],
+   [
+    0,
+    290,
+    29,
+    320
+   ],
+   [
+    0,
+    323,
+    29,
+    353
+   ],
+   [
+    0,
+    354,
+    29,
+    385
+   ]
+  ]
+ },
+ "enemy/shell_red": {
+  "sheet": "nsmbds_koopa_red.png",
+  "rects": [
+   [
+    0,
+    451,
+    16,
+    480
+   ],
+   [
+    0,
+    482,
+    16,
+    512
+   ],
+   [
+    0,
+    513,
+    16,
+    528
+   ]
+  ]
+ },
+ "hero.super.idle": {
+  "sheet": "nsmbds_mario.png",
+  "rects": [
+   [
+    7,
+    10,
+    17,
+    33
+   ],
+   [
+    315,
+    11,
+    19,
+    32
+   ],
+   [
+    635,
+    10,
+    16,
+    33
+   ],
+   [
+    920,
+    11,
+    14,
+    32
+   ],
+   [
+    1199,
+    11,
+    13,
+    32
+   ],
+   [
+    1472,
+    11,
+    14,
+    32
+   ]
+  ]
+ },
+ "hero.super.walk": {
+  "sheet": "nsmbds_mario.png",
+  "rects": [
+   [
+    8,
+    52,
+    20,
+    32
+   ],
+   [
+    95,
+    52,
+    23,
+    30
+   ],
+   [
+    179,
+    51,
+    19,
+    32
+   ],
+   [
+    250,
+    50,
+    14,
+    33
+   ],
+   [
+    317,
+    50,
+    15,
+    34
+   ],
+   [
+    389,
+    50,
+    23,
+    30
+   ],
+   [
+    469,
+    51,
+    23,
+    31
+   ],
+   [
+    549,
+    50,
+    21,
+    34
+   ]
+  ]
+ },
+ "hero.super.run": {
+  "sheet": "nsmbds_mario.png",
+  "rects": [
+   [
+    9,
+    186,
+    18,
+    30
+   ],
+   [
+    235,
+    183,
+    13,
+    32
+   ],
+   [
+    429,
+    185,
+    14,
+    31
+   ],
+   [
+    608,
+    183,
+    15,
+    32
+   ],
+   [
+    811,
+    180,
+    19,
+    32
+   ],
+   [
+    1019,
+    181,
+    21,
+    33
+   ],
+   [
+    1224,
+    183,
+    14,
+    31
+   ],
+   [
+    1420,
+    181,
+    22,
+    31
+   ]
+  ]
+ },
+ "hero.super.jump": {
+  "sheet": "nsmbds_mario.png",
+  "rects": [
+   [
+    7,
+    138,
+    20,
+    34
+   ],
+   [
+    212,
+    137,
+    18,
+    34
+   ]
+  ]
+ },
+ "hero.super.fall": {
+  "sheet": "nsmbds_mario.png",
+  "rects": [
+   [
+    403,
+    138,
+    18,
+    34
+   ],
+   [
+    462,
+    138,
+    18,
+    33
+   ]
+  ]
+ },
+ "hero.super.skid": {
+  "sheet": "nsmbds_mario.png",
+  "rects": [
+   [
+    78,
+    102,
+    18,
+    25
+   ],
+   [
+    134,
+    97,
+    25,
+    31
+   ]
+  ]
+ },
+ "hero.super.crawl": {
+  "sheet": "nsmbds_mario.png",
+  "rects": [
+   [
+    815,
+    148,
+    22,
+    20
+   ],
+   [
+    988,
+    141,
+    19,
+    22
+   ],
+   [
+    1151,
+    140,
+    15,
+    24
+   ],
+   [
+    1301,
+    139,
+    25,
+    22
+   ]
+  ]
+ },
+ "hero.super.swim": {
+  "sheet": "nsmbds_mario.png",
+  "rects": [
+   [
+    14,
+    365,
+    17,
+    32
+   ],
+   [
+    104,
+    364,
+    16,
+    32
+   ],
+   [
+    193,
+    366,
+    17,
+    31
+   ],
+   [
+    285,
+    365,
+    21,
+    32
+   ]
+  ]
+ }
 }
