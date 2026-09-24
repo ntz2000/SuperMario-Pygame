@@ -178,6 +178,7 @@ class Enemy(Actor):
         if self.state == "frozen":
             self._draw_frozen(target, cam)
             return
+        self._draw_shadow(target, cam)
         if self.squashed > 0:
             # 压扁贴图：高度压到 40%
             surf = self.frame_surf()

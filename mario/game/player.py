@@ -467,6 +467,7 @@ class Player(Actor):
             return
         if self.invuln > 0 and int(self.t * 30) % 2:
             return
+        self._draw_shadow(target, cam)
         surf = self.frame_surf()
         if self.dying:
             surf = pygame.transform.flip(surf, False, True)

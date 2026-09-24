@@ -153,6 +153,25 @@ class TileMap:
                                         **tile.colors()).surface
                 surf.blit(art, ((tx * TILE - index * CHUNK * TILE) * RES_SCALE,
                                 (ty * TILE + dy) * RES_SCALE))
+                # NSMB 光照：top 变体加 1px 顶部高光；深埋 fill 逐层压暗（AO 感）
+                if variant == "top" and tile.kind:
+                    hl = pygame.Surface((TILE * RES_SCALE, RES_SCALE),
+                                        pygame.SRCALPHA)
+                    hl.fill((255, 255, 240, 60))
+                    surf.blit(hl, ((tx * TILE - index * CHUNK * TILE) * RES_SCALE,
+                                   (ty * TILE + dy) * RES_SCALE))
+                elif variant == "fill" and tile.kind:
+                    depth = 0
+                    yy = ty - 1
+                    while yy >= 0 and self.at(tx, yy) in ("G", "I", "D"):
+                        depth += 1
+                        yy -= 1
+                    if depth:      # 每深一层暗 5%，最深 35%
+                        shade = pygame.Surface((TILE * RES_SCALE, TILE * RES_SCALE),
+                                               pygame.SRCALPHA)
+                        shade.fill((12, 16, 34, min(90, depth * 13)))
+                        surf.blit(shade, ((tx * TILE - index * CHUNK * TILE) * RES_SCALE,
+                                           (ty * TILE + dy) * RES_SCALE))
         if not bumps:
             self._chunks[index] = surf
         return surf
