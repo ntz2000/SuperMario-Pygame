@@ -111,6 +111,8 @@ class TileMap:
 
     def variant(self, tx: int, ty: int, tile: Tile) -> str:
         """Pick the art variant from the neighbour mask (auto-tile)."""
+        if tile.decoration:      # 装饰物没有 top/fill 变体，直接渲染
+            return ""
         above = self.at(tx, ty - 1)
         exposed = above not in self.table.tiles
         if exposed and self.at(tx - 1, ty) != tile.code and self.at(tx + 1, ty) != tile.code:
@@ -136,14 +138,18 @@ class TileMap:
         for tx in range(index * CHUNK, index * CHUNK + w):
             for ty in range(self.h):
                 tile = self.tile(tx, ty)
-                if tile is None or not tile.art or tile.decoration or tile.hidden:
+                if tile is None or not tile.art or tile.hidden:
+                    continue
+                if tile.decoration and not tile.art:
                     continue
                 dy = 0
                 if bumps and (tx, ty) in bumps:
                     # 顶起动画：剩余时间比例 -> 上移 0..6px 的正弦
                     k = 1.0 - bumps[(tx, ty)] / bump_time
                     dy = -round(math.sin(min(1.0, k) * math.pi) * 6)
-                art = self.assets.sprite(f"{tile.art}.{self.variant(tx, ty, tile)}",
+                variant = self.variant(tx, ty, tile)
+                art = self.assets.sprite(tile.art if not variant
+                                         else f"{tile.art}.{variant}",
                                         **tile.colors()).surface
                 surf.blit(art, ((tx * TILE - index * CHUNK * TILE) * RES_SCALE,
                                 (ty * TILE + dy) * RES_SCALE))

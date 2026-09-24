@@ -154,6 +154,9 @@ def default_table() -> TileTable:
     add(Tile("p", "pipe", "tile/pipe"))
     add(Tile("|", "pipe cap", "tile/pipe"))
     add(Tile("v", "vine", "", kind="", climbable=True, decoration=True))
+    add(Tile("'", "grass tuft", "deco/grass", kind="", decoration=True))
+    add(Tile('"', "bush", "deco/bush", kind="", decoration=True))
+    add(Tile("`", "flower", "deco/flower", kind="", decoration=True))
     add(Tile("w", "water", "tile/water", kind="", fluid=True))
     add(Tile("~", "water top", "tile/water_top", kind="", fluid=True))
     return t

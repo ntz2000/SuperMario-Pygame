@@ -1280,5 +1280,62 @@
    ]
   ],
   "fit_h": 26
+ },
+ "deco/grass": {
+  "sheet": "tilesets_extract/0 Grassland.png",
+  "rects": [
+   [
+    16,
+    208,
+    16,
+    16
+   ],
+   [
+    32,
+    144,
+    16,
+    16
+   ],
+   [
+    240,
+    192,
+    16,
+    16
+   ]
+  ]
+ },
+ "deco/bush": {
+  "sheet": "tilesets_extract/0 Grassland.png",
+  "rects": [
+   [
+    192,
+    176,
+    16,
+    16
+   ],
+   [
+    208,
+    176,
+    16,
+    16
+   ]
+  ]
+ },
+ "deco/flower": {
+  "sheet": "tilesets_extract/0 Grassland.png",
+  "rects": [
+   [
+    0,
+    208,
+    16,
+    16
+   ],
+   [
+    112,
+    144,
+    16,
+    16
+   ]
+  ]
  }
 }

@@ -71,6 +71,21 @@ class Builder:
         self.objects.append(dict(t=t, x=x, y=y, **kw))
         return self
 
+    def scatter(self, x0: int, x1: int, ground_y: int = 12, seed: int = 7):
+        """沿地面撒装饰（草丛/花/灌木）——确定性哈希，同关同布局。
+
+        只撒在真实地面上（ground_y+1 是地面），密度约 1/6 格。
+        """
+        h = sum(b * (i + 1) for i, b in enumerate(
+            bytes(f"{seed}:{x0}", "ascii"))) % 97
+        kinds = ("'", "'", '"', "'", "`", "'")
+        for x in range(x0, x1 + 1):
+            k = (x * 31 + h) % 6
+            if k < 2 and self.grid[ground_y + 1][x] in ("G", "I") \
+                    and self.grid[ground_y][x] == " ":
+                self.grid[ground_y][x] = kinds[(x + h) % 6]
+        return self
+
     def done(self, **meta):
         return dict(rows=["".join(r) for r in self.grid], objects=self.objects, **meta)
 
@@ -109,6 +124,7 @@ def level_1_1() -> dict:
     # 检查点 + 终点旗
     b.add("checkpoint", 48, 12)
     b.add("flag", 92, 9)
+    b.scatter(0, 91)
     return b.done(label="1-1", theme="overworld", music="overworld", time=320,
                   player=dict(x=3, y=12, form="small"),
                   spawns=dict(exit=dict(x=39, y=12)))
@@ -252,6 +268,7 @@ def level_2_1() -> dict:
     b.add("starcoin", 88, 5, idx=2)
     b.add("checkpoint", 46, 12)
     b.add("flag", 92, 9)
+    b.scatter(0, 95)
     return b.done(label="2-1", theme="snow", music="sky", time=320,
                   player=dict(x=3, y=12, form="small"))
 

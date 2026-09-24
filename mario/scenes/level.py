@@ -739,33 +739,61 @@ class LevelScene(Scene):
             pygame.draw.rect(target, row, pygame.Rect(0, y, w, 3 * S))
 
     def _decor(self, target):
-        """视差山丘、云、灌木——按滚动速度的一部分移动。
+        """三层视差背景（NSMB 风）：远山剪影 → 中景山丘灌木 → 前景云。
 
-        图案只依赖主题（常量），与滚动无关；按场景实例缓存两张贴片，
-        每帧只剩十几次 blit（原来每帧新建 13 个 Surface + 45 个 PIL Canvas）。
+        图案只依赖主题（常量）；按场景实例缓存贴片，每帧只有 blit。
+        远山是低饱和大剪影（0.2 倍速），中景山+灌木 0.35 倍速，
+        云 0.15 倍速且行间错落——层次感直接决定画面档次。
         """
         if self._decor_strips is None:
-            hill, hill_d, cloud, bush = (self.theme.hill, self.theme.hill_d,
-                                         self.theme.cloud, self.theme.bush)
-            hills = pygame.Surface((96 * S, 48 * S), pygame.SRCALPHA)
-            for (bx, by, bw, bh), col in (
-                    ((6, 20, 90, 48), hill), ((-20, 26, 60, 48), hill_d),
-                    ((56, 34, 92, 48), bush)):
-                c_ellipse(hills, (bx * S, by * S, bw * S, bh * S), col)
-            clouds = pygame.Surface((128 * S, 40 * S), pygame.SRCALPHA)
-            for cx, cy, r in ((20, 22, 9), (34, 18, 12), (52, 22, 8), (92, 14, 10)):
-                c_ellipse(clouds, ((cx - r) * S, (cy - r * 0.7) * S,
-                                   (cx + r) * S, (cy + r) * S), cloud)
-            self._decor_strips = (hills, clouds)
-        hills, clouds = self._decor_strips
+            strips = self._build_decor()
+            self._decor_strips = strips
+        far, mid, clouds = self._decor_strips
         ox, _ = self.camera.offset
         base = self.app.base[1] * S
-        for i in range(-1, self.app.base[0] // 96 + 2):
-            x = (i * 96 - (ox * 0.28) % 96) * S
-            target.blit(hills, (x, base - 48 * S))
-        for i in range(-1, self.app.base[0] // 128 + 2):
-            x = (i * 128 - (ox * 0.14) % 128) * S
-            target.blit(clouds, (x, (12 + (i % 3) * 6) * S))
+        w = self.app.base[0] * S
+        # 远山（0.2x，最低饱和度）
+        for i in range(-1, w // (144 * S) + 2):
+            x = (i * 144 - (ox * 0.20) % 144) * S
+            target.blit(far, (x, base - 56 * S))
+        # 中景山丘+灌木（0.35x）
+        for i in range(-1, w // (96 * S) + 2):
+            x = (i * 96 - (ox * 0.35) % 96) * S
+            target.blit(mid, (x, base - 44 * S))
+        # 云（0.12x，两层错落）
+        for i in range(-1, w // (128 * S) + 2):
+            x = (i * 128 - (ox * 0.12) % 128) * S
+            target.blit(clouds, (x, (10 + (i % 3) * 7) * S))
+
+    def _build_decor(self):
+        import colorsys
+        hill, hill_d, cloud, bush = (self.theme.hill, self.theme.hill_d,
+                                     self.theme.cloud, self.theme.bush)
+        # 远山：主题山色压暗+去饱和（远景灰调）
+        def _desat(hex_color, k=0.55, dk=0.72):
+            """远景剪影色：压暗+去饱和，返回 hex（c_ellipse 只吃 hex 字符串）。"""
+            c = hexc(hex_color)[:3]
+            h, l, s = colorsys.rgb_to_hls(*[v / 255 for v in c])
+            r, g, b = colorsys.hls_to_rgb(h, l * dk, s * k)
+            return "#%02x%02x%02x" % (round(r * 255), round(g * 255), round(b * 255))
+        far_c = _desat(hill)
+        far_d = _desat(hill_d, 0.5, 0.66)
+        mid_c, mid_d, bush_c = hill, hill_d, bush
+        # 远山条：大而钝的圆弧剪影
+        far = pygame.Surface((144 * S, 60 * S), pygame.SRCALPHA)
+        c_ellipse(far, (10 * S, 18 * S, 134 * S, 92 * S), far_c)
+        c_ellipse(far, (-24 * S, 26 * S, 70 * S, 92 * S), far_d)
+        # 中景山：清晰两色+灌木
+        mid = pygame.Surface((96 * S, 50 * S), pygame.SRCALPHA)
+        c_ellipse(mid, (6 * S, 12 * S, 92 * S, 52 * S), mid_c)
+        c_ellipse(mid, (-20 * S, 18 * S, 62 * S, 52 * S), mid_d)
+        c_ellipse(mid, (58 * S, 28 * S, 94 * S, 50 * S), bush_c)
+        # 云：三团圆（描边柔化）
+        clouds = pygame.Surface((128 * S, 40 * S), pygame.SRCALPHA)
+        for cx, cy, r in ((20, 22, 9), (34, 18, 12), (52, 22, 8), (92, 14, 10)):
+            c_ellipse(clouds, ((cx - r) * S, (cy - r * 0.7) * S,
+                               (cx + r) * S, (cy + r) * S), cloud)
+        return (far, mid, clouds)
 
     def _snowfall(self, target):
         """雪落氛围：确定性伪随机雪点（随时间下落 + 视差横向漂移）。"""
