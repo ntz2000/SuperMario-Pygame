@@ -85,10 +85,10 @@ class Actor:
         surf = self.frame_surf()
         if self.flip:
             surf = pygame.transform.flip(surf, True, False)
-        # 贴地绘制：精灵最低实体行对齐 body.y（修"悬空"——帧底常有空边）
+        # 贴地绘制：精灵最低实体行精确踩在 body.y（历史 +1 偏移让脚悬 1px）
         bottom = self._sprite_bottom(surf)
         x, y = cam.to_screen(self.body.x - surf.get_width() / 2,
-                             self.body.y - (bottom + 1))
+                             self.body.y - bottom - 0.5)
         self._draw_shadow(target, cam)
         target.blit(surf, (x, y))
 

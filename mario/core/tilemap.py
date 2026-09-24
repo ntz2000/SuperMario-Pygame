@@ -151,8 +151,23 @@ class TileMap:
                 art = self.assets.sprite(tile.art if not variant
                                          else f"{tile.art}.{variant}",
                                         **tile.colors()).surface
-                surf.blit(art, ((tx * TILE - index * CHUNK * TILE) * RES_SCALE,
-                                (ty * TILE + dy) * RES_SCALE))
+                # 装饰瓦片（草/花）只画上半：脚会"陷"进整格草里造成悬空感
+                if tile.decoration and tile.art.startswith("deco/"):
+                    top_half = pygame.Surface((art.get_width(), art.get_height() // 2),
+                                              pygame.SRCALPHA)
+                    top_half.blit(art, (0, 0))
+                    # 底半也画但半透明（草根融入地面）
+                    bot_half = art.subsurface(pygame.Rect(
+                        0, art.get_height() // 2, art.get_width(),
+                        art.get_height() - art.get_height() // 2)).copy()
+                    bot_half.set_alpha(120)
+                    surf.blit(top_half, ((tx * TILE - index * CHUNK * TILE) * RES_SCALE,
+                                         (ty * TILE + dy) * RES_SCALE))
+                    surf.blit(bot_half, ((tx * TILE - index * CHUNK * TILE) * RES_SCALE,
+                                         (ty * TILE + dy) * RES_SCALE + art.get_height() // 2))
+                else:
+                    surf.blit(art, ((tx * TILE - index * CHUNK * TILE) * RES_SCALE,
+                                    (ty * TILE + dy) * RES_SCALE))
                 # NSMB 光照：top 变体加 1px 顶部高光；深埋 fill 逐层压暗（AO 感）
                 if variant == "top" and tile.kind:
                     hl = pygame.Surface((TILE * RES_SCALE, RES_SCALE),

@@ -500,10 +500,10 @@ class Player(Actor):
                 w2 = round(surf.get_width() * (1 - amount))
                 h2 = round(surf.get_height() * (1 + amount))
             surf = pygame.transform.scale(surf, (w2, h2))
-        # 贴地绘制（squash 变形时贴脚底；正常时精灵底对齐）
+        # 贴地绘制（squash 变形时贴脚底；正常时精灵底对齐，去 +1 偏移）
         bottom = self._sprite_bottom(surf) if not k else surf.get_height() - 1
         x, y = cam.to_screen(self.body.x - surf.get_width() / 2,
-                             self.body.y - (bottom + 1))
+                             self.body.y - bottom - 0.5)
         target.blit(surf, (x, y))
         if self.held is not None:
             self.held.draw(target, cam)

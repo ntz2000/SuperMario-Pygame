@@ -184,7 +184,8 @@ class Enemy(Actor):
             surf = self.frame_surf()
             flat = pygame.transform.scale(surf, (surf.get_width(),
                                                 max(2, int(surf.get_height() * 0.4))))
-            x, y = cam.to_screen(self.body.x - flat.get_width() / 2, self.body.y - flat.get_height())
+            x, y = cam.to_screen(self.body.x - flat.get_width() / 2,
+                                self.body.y - flat.get_height() - 0.5)
             target.blit(flat, (x, y))
             return
         if self.state in ("shell", "slide"):
@@ -192,7 +193,9 @@ class Enemy(Actor):
                 self.t * (10 if self.state == "slide" else 0))
             if self.flip:
                 surf = pygame.transform.flip(surf, True, False)
-            x, y = cam.to_screen(self.body.x - surf.get_width() / 2, self.body.y - surf.get_height())
+            bottom = self._sprite_bottom(surf)
+            x, y = cam.to_screen(self.body.x - surf.get_width() / 2,
+                                 self.body.y - bottom - 0.5)
             target.blit(surf, (x, y))
             return
         super().draw(target, cam)
@@ -212,8 +215,9 @@ class Enemy(Actor):
             flash = pygame.Surface(surf.get_size(), pygame.SRCALPHA)
             flash.fill((255, 255, 255, 90))
             surf.blit(flash, (0, 0))
+        bottom = self._sprite_bottom(surf)
         x, y = cam.to_screen(self.body.x - surf.get_width() / 2,
-                            self.body.y - surf.get_height())
+                            self.body.y - bottom - 0.5)
         jitter = 1 if (self.frozen_t < 1.2 and int(self.frozen_t * 24) % 2) else 0
         target.blit(surf, (x + jitter, y))
 
@@ -385,7 +389,7 @@ class Grrrol(Enemy):
         surf.blit(warn, (0, 0), special_flags=pygame.BLEND_RGBA_ADD)
         bottom = self._sprite_bottom(surf)
         x, y = cam.to_screen(self.body.x - surf.get_width() / 2,
-                             self.body.y - (bottom + 1))
+                             self.body.y - bottom - 0.5)
         target.blit(surf, (x, y))
 
 
