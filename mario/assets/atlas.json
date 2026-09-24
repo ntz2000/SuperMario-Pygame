@@ -1337,5 +1337,29 @@
     16
    ]
   ]
+ },
+ "item/super": {
+  "sheet": "nsmbw/mushroom_super.png",
+  "rects": [
+   [
+    0,
+    0,
+    32,
+    32
+   ]
+  ],
+  "fit_h": 13
+ },
+ "item/1up": {
+  "sheet": "nsmbw/mushroom_1up.png",
+  "rects": [
+   [
+    0,
+    0,
+    32,
+    32
+   ]
+  ],
+  "fit_h": 13
  }
 }

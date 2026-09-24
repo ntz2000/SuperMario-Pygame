@@ -468,6 +468,23 @@ class TestFlow:
             scene.update(); app.input.advance()
         assert p.body.vx > 0.5, "冰面松开后应继续滑行"
 
+    def test_bump_block_kills_enemy_above(self, app, level):
+        """顶块冲击波：块正上方的敌人被弹飞（NSMB 顶块杀敌）。"""
+        from mario.game.enemies import Goomba
+
+        tx = 22
+        g = level.spawn(Goomba, (tx + 0.5) * TILE, 9 * TILE - 1)
+        g.awake = True
+        p = level.player
+        p.body.x = (tx + 0.5) * TILE
+        p.body.y = 13 * TILE + 0.001
+        app.input.press("jump")
+        for _ in range(40):
+            level.update()
+            app.input.advance()
+        assert not g.alive, "顶块应弹飞上方敌人"
+        assert p.alive
+
     def test_flag_finish(self, app, level):
         from mario.game.objects import GoalFlag
 

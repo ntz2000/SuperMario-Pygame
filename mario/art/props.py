@@ -109,9 +109,11 @@ def coin(frame: int = 0, n=4):
 def mushroom(variant: str = "super"):
     col = {"super": "#e0392b", "1up": "#3fa535", "mega": "#c95bd6", "mini": "#3a7fd0"}[variant]
     c = Canvas((14, 14))
-    c.pie((0, 1, 14, 13), 180, 360, hexc(col))
-    c.rrect((1, 7, 13, 14), 3, CREAM)
-    for x, y, r in ((3, 4, 2.4), (9, 3.5, 2.8)):
+    # 形状占满画布：outline 的 _dilate 只描精灵外缘一圈，
+    # 若形状离画布边有缝，描边会连成方框（"叠叠乐"贴图 bug）
+    c.pie((0, 0, 14, 15), 180, 360, hexc(col))
+    c.rrect((0, 7, 14, 14), 2, CREAM)
+    for x, y, r in ((3, 3.5, 2.4), (9, 3, 2.8)):
         c.ellipse((x - r, y - r, x + r, y + r), hexc("#fff8f0"))
     return c
 

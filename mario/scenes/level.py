@@ -553,6 +553,8 @@ class LevelScene(Scene):
                 continue
             code = self.tilemap.at(tx, ty)
             self.bumps[(tx, ty)] = BUMP_TIME
+            # NSMB 招数：顶块的冲击波把站在块上的敌人弹飞（顶正上方杀敌）
+            self._bump_launch(tx, ty)
             if tile.name == "note":
                 self.sfx("note")            # 音符块：只响不消耗
                 continue
@@ -567,6 +569,24 @@ class LevelScene(Scene):
                 self.break_block(tx, ty, tile)
                 continue
             self.sfx("bump")
+
+    def _bump_launch(self, tx: int, ty: int):
+        """顶起方块的冲击：弹飞块正上方的敌人 / 弹起道具。"""
+        block_top = ty * TILE
+        zone = pygame.Rect(tx * TILE - 2, block_top - 14, TILE + 4, 14)
+        for a in list(self.actors):
+            if a is self.player or a.removed or not a.alive or not getattr(a, "body", None):
+                continue
+            if not a.rect.colliderect(zone):
+                continue
+            if hasattr(a, "hurt") and getattr(a, "tag", "") not in ("proj", "foe_proj"):
+                a.hurt(self, self.player)      # 敌人：翻面弹飞（经典顶块杀）
+            elif hasattr(a, "bounce"):
+                a.body.vy = min(a.body.vy, -4.2)   # 道具/弹簧被顶起
+        # 顶碎冻结敌人（冰块被顶=碎）
+        for a in list(self.actors):
+            if getattr(a, "state", "") == "frozen" and a.rect.colliderect(zone):
+                a.shatter_ice(self)
 
     def _multi_coin(self, tx, ty):
         st = self.multi.setdefault((tx, ty), dict(n=0, t=0.0))
