@@ -11,6 +11,7 @@ import hashlib
 import inspect
 import json
 import os
+import sys
 import wave
 import io
 from dataclasses import dataclass, field
@@ -103,19 +104,26 @@ def _fingerprint(id: str, opts: dict) -> str:
     """Hash the generator's source *and* the options it will run with: edit the art or
     recolour a block and the cached file stops matching, so it is simply rebuilt.
 
-    结果按 (id, opts) 备忘录化——inspect.getsource 要重新 tokenize 整个美术模块，
-    而热路径（每帧几十次 sprite 查询）查的永远是同一批键。
+    历史坑：指纹只 hash 生成器模块（props.py），改 ink.py 的 finish()
+    （如裁黑框边）不会失效缓存——旧带框 PNG 一直被加载（"金币黑框
+    修不掉"的真凶）。现在把整条渲染链（生成器模块 + ink + engine/assets）
+    都纳入指纹。
     """
     key = (id, repr(sorted(opts.items())))
     fp = _FP_MEMO.get(key)
     if fp is not None:
         return fp
     fn, _kwargs, _ = _REGISTRY[id]
-    try:
-        src = inspect.getsource(inspect.getmodule(fn)) + inspect.getsource(fn)
-    except OSError:  # pragma: no cover
-        src = ""
-    h = hashlib.sha256(src.encode())
+    src_parts = []
+    for mod in (inspect.getmodule(fn), sys.modules.get("mario.engine.ink"),
+                sys.modules.get("mario.engine.res")):
+        if mod is None:
+            continue
+        try:
+            src_parts.append(inspect.getsource(mod))
+        except OSError:  # pragma: no cover
+            pass
+    h = hashlib.sha256("".join(src_parts).encode())
     h.update(key[1].encode())
     fp = h.hexdigest()[:16]
     _FP_MEMO[key] = fp

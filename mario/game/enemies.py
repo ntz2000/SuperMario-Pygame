@@ -379,8 +379,13 @@ class Grrrol(Enemy):
         # 滚动感：按行进距离旋转
         angle = (self.t * 520 * self.dir) % 360
         surf = pygame.transform.rotate(surf, -angle)
+        # 危险警示：滚动中的红色脉冲描边（"碰不得"的视觉语言）
+        warn = pygame.Surface(surf.get_size(), pygame.SRCALPHA)
+        warn.fill((255, 60, 40, int(46 + 40 * abs(math.sin(self.t * 8)))))
+        surf.blit(warn, (0, 0), special_flags=pygame.BLEND_RGBA_ADD)
+        bottom = self._sprite_bottom(surf)
         x, y = cam.to_screen(self.body.x - surf.get_width() / 2,
-                             self.body.y - surf.get_height())
+                             self.body.y - (bottom + 1))
         target.blit(surf, (x, y))
 
 

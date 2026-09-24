@@ -91,9 +91,13 @@ def buzzy(frame: int = 0):
 
 
 def spiny(frame: int = 0):
-    c = koopa(frame, shell=hexc("#d05a2a"), trim=hexc("#f0c48a"))
-    for i in range(3):
-        c.poly([(3 + i * 3.4, 6), (5 + i * 3.4, 1), (7 + i * 3.4, 6)], hexc("#f6f2ea"))
+    """刺龟：刺更粗更亮 + 描边，让"踩不得"一眼可辨。"""
+    c = koopa(frame, shell=hexc("#c84820"), trim=hexc("#f0c48a"))
+    for i in range(4):
+        x0 = 2.6 + i * 3.0
+        # 白色大刺 + 红芯警示
+        c.poly([(x0, 6.5), (x0 + 1.5, 0.2), (x0 + 3.0, 6.5)], hexc("#fff8f0"))
+        c.poly([(x0 + 0.9, 5.5), (x0 + 1.5, 2.0), (x0 + 2.1, 5.5)], hexc("#e0392b"))
     return c
 
 

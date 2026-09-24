@@ -145,7 +145,7 @@ class TitleScene(Scene):
             target.blit(ntxt, (w // 2 + 8, y))
             y += 22
         # 形态图鉴
-        y += 6
+        y += 4
         sub = small.render("形态:", True, (255, 240, 150))
         target.blit(sub, (w // 2 - 88, y))
         row = [("super", "大"), ("fire", "火"), ("ice", "冰"),
@@ -158,6 +158,25 @@ class TitleScene(Scene):
             except Exception:
                 pass
             x += 24
+        # 敌人危险度图鉴（"分不清的怪"→ 一眼看出谁能踩）
+        y += 24
+        sub = small.render("敌人:", True, (255, 240, 150))
+        target.blit(sub, (w // 2 - 88, y))
+        foes = [("enemy/goomba", "可踩"), ("enemy/koopa", "可踩"),
+                ("enemy/biddybud", "可踩"), ("enemy/spiny", "刺!别踩"),
+                ("enemy/grrrol", "无敌!躲"), ("enemy/drybones", "踩散会复活")]
+        x = w // 2 - 88
+        for art, label in foes:
+            try:
+                surf = self.app.assets.sprite(art).frame(0)
+                sx = x + 9 - surf.get_width() // 2
+                target.blit(surf, (sx, y + 8))
+            except Exception:
+                pass
+            col = (120, 220, 130) if "可踩" in label else (255, 130, 110)
+            t2 = small.render(label, True, col)
+            target.blit(t2, (x + 20, y + 10))
+            x += 62
         hint = small.render("按任意键返回", True, (170, 170, 190))
         if int(self.time / 20) % 2:
             target.blit(hint, (w // 2 - hint.get_width() // 2, h - 16))
