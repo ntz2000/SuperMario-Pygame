@@ -103,6 +103,14 @@ PowerupState: Small=0/Super=1/Fire=2/Mega=3/Mini=4/Shell=5，Fire 就是 Super
 - `nsmbds_tiles_grassland.png`（2566×2053）——草原全量瓦片（含背景装饰）
 - `tilesets_extract/` 雪原/火山/丛林主题尚未接入 atlas
 
+## V7.1：wiki 官方姿势帧归位
+
+根目录 5 张散落的 mariowiki 裁剪帧（搜索 agent 下载后未归位）移入
+`sheets/nsmbw/` 并接线：`hero.super.jump`（20x37 标准跳）、
+`hero.super.swim`（24x30，替代之前的"候选段"）、`hero.super.pound`
+（19x25 下砸落地，新动画）；standing/stoop 备用未接。
+程序化 CYCLES 补 pound 动画（小/迷你/巨型形态回退用）。
+
 ## V4 新增
 - `item/bigcoin`：nsmbds_starcoin.png y218-243 行带 27 帧取 8 帧旋转
 - `tile/ug-*/castle-*/water-*`：三主题 ground+rock 全 6 变体

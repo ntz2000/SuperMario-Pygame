@@ -761,19 +761,13 @@
   "fit_h": 26
  },
  "hero.super.jump": {
-  "sheet": "nsmbds_mario.png",
+  "sheet": "nsmbw/MariojumpingNSMB.png",
   "rects": [
    [
-    7,
-    138,
+    0,
+    0,
     20,
-    34
-   ],
-   [
-    212,
-    137,
-    18,
-    34
+    37
    ]
   ],
   "fit_h": 26
@@ -845,31 +839,13 @@
   "fit_h": 26
  },
  "hero.super.swim": {
-  "sheet": "nsmbds_mario.png",
+  "sheet": "nsmbw/MarioswimNSMB.png",
   "rects": [
    [
-    14,
-    365,
-    17,
-    32
-   ],
-   [
-    104,
-    364,
-    16,
-    32
-   ],
-   [
-    193,
-    366,
-    17,
-    31
-   ],
-   [
-    285,
-    365,
-    21,
-    32
+    0,
+    0,
+    24,
+    30
    ]
   ],
   "fit_h": 26
@@ -1292,5 +1268,17 @@
     16
    ]
   ]
+ },
+ "hero.super.pound": {
+  "sheet": "nsmbw/MariogroundpoundNSMB.png",
+  "rects": [
+   [
+    0,
+    0,
+    19,
+    25
+   ]
+  ],
+  "fit_h": 26
  }
 }

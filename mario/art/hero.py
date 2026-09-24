@@ -134,6 +134,7 @@ CYCLES = {
     "swim": SWIM,
     "spin": SPIN,
     "dive": [DIVE],
+    "pound": [DIVE],      # 下砸：super 走 atlas 真实帧，其余形态程序化回退
 }
 
 

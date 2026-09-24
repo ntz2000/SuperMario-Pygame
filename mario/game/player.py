@@ -434,7 +434,7 @@ class Player(Actor):
             self.set_anim("skid")
         elif not b.on_ground:
             if self.pound:
-                self.set_anim("dive")
+                self.set_anim("pound")
             elif self.spinning:
                 self.set_anim("spin")
             else:
