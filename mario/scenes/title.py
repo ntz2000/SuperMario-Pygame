@@ -15,6 +15,7 @@ class TitleScene(Scene):
         self.on_start = on_start
         self.index = 0
         self.names = list(self.levels)
+        self.show_keys = False     # 按键说明卡
 
     def on_enter(self, **kw):
         super().on_enter(**kw)
@@ -25,6 +26,11 @@ class TitleScene(Scene):
     def handle(self, event):
         if event.type != pygame.KEYDOWN:
             return False
+        if self.show_keys:
+            # 按键卡内：任意键关闭
+            self.show_keys = False
+            self.app.sfx("bump")
+            return True
         if event.key in (pygame.K_SPACE, pygame.K_z, pygame.K_RETURN):
             self.start()
             return True
@@ -34,6 +40,10 @@ class TitleScene(Scene):
         elif event.key in (pygame.K_DOWN, pygame.K_s):
             self.index = (self.index + 1) % max(1, len(self.names))
             self.app.sfx("bump")
+        elif event.key == pygame.K_h:
+            self.show_keys = True      # 按键说明卡
+            self.app.sfx("reveal")
+            return True
         elif event.key == pygame.K_r:
             from ..data import save as saved
             saved.clear()
@@ -59,6 +69,9 @@ class TitleScene(Scene):
 
     def draw(self, target):
         w, h = self.app.base
+        if self.show_keys:
+            self._draw_keys_card(target)
+            return
         for y in range(0, h, 3):
             t = y / (h - 1)
             pygame.draw.rect(target, tuple(round(a + (b - a) * t) for a, b in
@@ -96,8 +109,58 @@ class TitleScene(Scene):
         if self.names:
             arrow = small.render(">", True, (255, 255, 255))
             target.blit(arrow, (w // 2 - 26, 92 + self.index * 15))
-        target.blit(small.render("R: reset save", True, (200, 200, 220)),
+        target.blit(small.render("R: reset save   H: controls", True, (200, 200, 220)),
                     (8, h - 14))
+
+    # -- 按键说明卡 ------------------------------------------------------------------------
+    KEYS = (
+        ("移动 / 跑", "← → / Shift"),
+        ("跳（按住更高）", "K 空格"),
+        ("跑动起跳更远更高", "Shift+K"),
+        ("旋转跳（弹开刺敌）", "X"),
+        ("下砸", "空中 ↓+K"),
+        ("技能：火球/冰球/搬壳", "C"),
+        ("蹲 / 进管道", "↓"),
+        ("暂停 / 菜单", "Enter / Esc"),
+    )
+
+    def _draw_keys_card(self, target):
+        """全屏按键说明卡（标题按 H 打开，任意键关闭）。"""
+        w, h = self.app.base
+        veil = pygame.Surface((w, h), pygame.SRCALPHA)
+        veil.fill((8, 10, 26, 230))
+        target.blit(veil, (0, 0))
+        big = pygame.font.Font(None, 30)
+        small = pygame.font.Font(None, 19)
+        title = big.render("操 作 说 明", True, (255, 246, 210))
+        target.blit(title, title.get_rect(midtop=(w // 2, 14)))
+        pygame.draw.line(target, (255, 240, 150), (w // 2 - 60, 38),
+                         (w // 2 + 60, 38), 2)
+        y = 50
+        for name, key in self.KEYS:
+            pygame.draw.rect(target, (255, 226, 130), (w // 2 - 88, y - 3, 74, 17))
+            ktxt = small.render(key, True, (16, 20, 38))
+            target.blit(ktxt, (w // 2 - 84, y))
+            ntxt = small.render(name, True, (226, 226, 236))
+            target.blit(ntxt, (w // 2 + 8, y))
+            y += 22
+        # 形态图鉴
+        y += 6
+        sub = small.render("形态:", True, (255, 240, 150))
+        target.blit(sub, (w // 2 - 88, y))
+        row = [("super", "大"), ("fire", "火"), ("ice", "冰"),
+               ("propeller", "桨"), ("penguin", "鹅"), ("mega", "巨")]
+        x = w // 2 - 52
+        for form, label in row:
+            try:
+                surf = self.app.assets.sprite(f"hero.{form}.idle").frame(0)
+                target.blit(surf, (x - surf.get_width() // 2, y + 8))
+            except Exception:
+                pass
+            x += 24
+        hint = small.render("按任意键返回", True, (170, 170, 190))
+        if int(self.time / 20) % 2:
+            target.blit(hint, (w // 2 - hint.get_width() // 2, h - 16))
 
     def _hill(self, target, x, ground):
         from ..engine.ink import Canvas, hexc

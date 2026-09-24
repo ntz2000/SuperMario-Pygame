@@ -51,7 +51,10 @@ class Enemy(Actor):
         if self.carried:
             return                        # 被玩家举着，位置由玩家维护
         if not self.awake:
-            if world.camera.view_rect.inflate(32, 0).colliderect(self.rect):
+            # 原版行为：敌人比镜头右缘早一屏就开走（入画时已在巡逻，
+            # 而不是站桩等人）。历史 bug：唤醒半径太小，Goomba 像柱子。
+            wake_zone = world.camera.view_rect.inflate(320, 120)
+            if wake_zone.colliderect(self.rect):
                 self.awake = True
                 self.body.vx = self.dir * self.speed
             return

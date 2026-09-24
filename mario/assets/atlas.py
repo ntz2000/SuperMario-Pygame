@@ -32,13 +32,42 @@ ATLAS = _load_atlas()
 _sheet_cache: dict[str, pygame.Surface] = {}
 
 
+# 各 sheet 的背景色（TSR/GIF 底），载入时整体抠除——历史问题：底色残留
+# 让精灵自带粉/青方块背景，视觉"背后有一个背景很难看"。
+_BG_KEYS = {
+    "nsmbds_goomba.png": (248, 136, 248),
+    "nsmbds_koopa_green.png": (176, 184, 160),
+    "nsmbds_koopa_red.png": (0, 120, 160),
+    "nsmbds_mario.png": (153, 217, 234),
+    "nsmbds_starcoin.png": (21, 26, 51),
+    "nsmbds_spiny.png": (255, 0, 255),
+}
+
+
+def _cutout(im):
+    """把接近背景色的像素转为全透明（抗锯齿边缘一起清掉）。"""
+    from PIL import Image
+    import numpy as np
+    name = getattr(im, "_sheet_name", "")
+    if name not in _BG_KEYS:
+        return im
+    bg = np.array(_BG_KEYS[name])
+    a = np.asarray(im).astype(int)
+    # 与背景色的切比雪夫距离 <26 视为背景（含抗锯齿半残影）
+    near = np.abs(a[:, :, :3] - bg).max(axis=-1) < 26
+    out = a.copy()
+    out[near, 3] = 0
+    return Image.fromarray(out.astype("uint8"), "RGBA")
+
+
 def sheet_surface(name: str) -> pygame.Surface:
-    """载入并缓存精灵图（PNG/GIF 都支持，统一转 RGBA）。"""
+    """载入并缓存精灵图（统一转 RGBA + 抠掉底色残留）。"""
     if name not in _sheet_cache:
         from PIL import Image
-        import io
         path = os.path.join(_SHEETS, name)
         im = Image.open(path).convert("RGBA")
+        im._sheet_name = name
+        im = _cutout(im)
         raw = im.tobytes()
         surf = pygame.image.frombuffer(raw, im.size, "RGBA")
         _sheet_cache[name] = surf
