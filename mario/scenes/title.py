@@ -94,9 +94,15 @@ class TitleScene(Scene):
         hint = small.render("press JUMP to start", True, (255, 255, 255))
         if int(self.time / 20) % 2:
             target.blit(hint, hint.get_rect(center=(w // 2, 74)))
+        last_world = ""
         for i, name in enumerate(self.names):
             col = (255, 240, 150) if i == self.index else (230, 230, 240)
             label = self.levels[name].get("label", name)
+            world = label.split("-")[0] if "-" in label else label
+            if world != last_world:
+                last_world = world
+                wt = small.render(f"World {world}", True, (170, 220, 255))
+                target.blit(wt, wt.get_rect(midleft=(w // 2 - 34, 94 + i * 15)))
             txt = small.render(label, True, col)
             target.blit(txt, txt.get_rect(midleft=(w // 2 - 16, 98 + i * 15)))
             stars = (getattr(self.app, "progress", {}) or {}).get("stars", {}).get(name, {})

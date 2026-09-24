@@ -51,6 +51,7 @@ class Player(Actor):
         self._bubble_ground = 0.0
         self._bubble_t = 0.0
         self.pending_form = ""  # 头顶空间不足时排队等长（防变大穿模）
+        self.morph_t = 0.0     # 变身闪烁计时（NSMB 变身时大小交替闪烁）
         self.prop_fuel = 0.0    # 螺旋桨燃料（propeller 形态）
         self.sliding = False    # 企鹅冰滑状态
         self.squash_t = 0.0     # 落地压扁/起跳拉伸计时（squash&stretch 让动作有生命感）
@@ -93,6 +94,7 @@ class Player(Actor):
         self.body.w = max(8, int(self.body.h * 0.66))
         if grew:
             self.squash_t = 1.2      # 长大时的弹性缩放（变身动画感）
+            self.morph_t = 0.6      # 大小交替闪烁（NSMB 变身感）
 
     def _form_h(self, form: str) -> int:
         return {"mini": TUNE.mini_h, "small": TUNE.small_h,
@@ -199,6 +201,8 @@ class Player(Actor):
             self.squash_t = max(0.0, self.squash_t - 1 / 30.0)
         elif self.squash_t < 0:
             self.squash_t = min(0.0, self.squash_t + 1 / 30.0)
+        if self.morph_t > 0:           # 变身闪烁：大小形态交替 0.6 秒
+            self.morph_t = max(0.0, self.morph_t - 1 / 60.0)
         self.in_water = world.fluid_at(b.rect.inflate(-2, -2))
         self.climbing = world.ladder_at(b.rect)
 
@@ -489,6 +493,11 @@ class Player(Actor):
                 surf.blit(glow, (0, 0), special_flags=pygame.BLEND_RGBA_ADD)
         if self.flip:
             surf = pygame.transform.flip(surf, True, False)
+        # 变身闪烁：0.6s 内大小形态交替渲染（缩放 0.64↔1.0 方波）
+        if self.morph_t > 0 and int(self.morph_t * 24) % 2:
+            k = 0.64
+            surf = pygame.transform.scale(surf, (round(surf.get_width() * k),
+                                                 round(surf.get_height() * k)))
         # squash & stretch：落地压扁（宽+高-），起跳拉伸（宽-高+）
         k = self.squash_t
         if k:

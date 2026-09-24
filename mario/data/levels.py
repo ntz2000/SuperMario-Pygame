@@ -334,6 +334,57 @@ def level_2_castle() -> dict:
                   player=dict(x=2, y=12, form="super"))
 
 
+def level_3_1() -> dict:
+    """世界 3-1 天空浮岛：蘑菇平台 + 云层 + 螺旋桨主场（摔落即死的高空关）。"""
+    b = Builder(88)
+    b.floor(0, 12, top=13, code="G")
+    # 浮岛链（间隔 3 格的跳跃链 + 大金币在岛上）
+    islands = [(18, 11, 3), (25, 9, 3), (32, 10, 4), (40, 8, 3), (47, 10, 3),
+               (54, 9, 4), (62, 7, 3), (69, 9, 3), (76, 10, 4)]
+    for x0, ty, wdt in islands:
+        b.box(x0, ty, x0 + wdt - 1, ty + 1, "D")
+    b.box(84, 12, 87, 13, "G")
+    b.put(6, 9, "P")                      # 螺旋桨块（高空关主场）
+    b.put(30, 6, "?")
+    b.coins([19, 20, 21], 9)
+    b.coins([41, 42], 6)
+    b.add("koopa", 33, 9, dir=-1)         # 岛上巡逻
+    b.add("biddybud", 48, 9).add("biddybud", 49, 9, dir=1)
+    b.add("starcoin", 26, 6, idx=0)
+    b.add("starcoin", 63, 4, idx=1)
+    b.add("starcoin", 85, 8, idx=2)
+    b.add("checkpoint", 41, 7)            # 浮岛检查点
+    b.add("flag", 86, 9)
+    return b.done(label="3-1", theme="sky", music="sky", time=300,
+                  player=dict(x=3, y=12, form="small"))
+
+
+def level_3_castle() -> dict:
+    """世界 3 城堡：云中城堡（天空主题 Boss 战 + 双段关卡）。"""
+    b = Builder(64)
+    b.box(0, 0, 63, 1, "M")
+    b.floor(0, 63, top=13, code="D")
+    b.gap(26, 29)
+    b.box(40, 9, 45, 9, "B")
+    b.put(41, 9, "?").put(44, 9, "!")
+    b.put(8, 9, "Q")
+    b.add("platform", 26, 10, to=(4, 0), period=3.2)
+    b.add("platform", 38, 8, to=(0, 4), period=4.0)
+    b.add("drybones", 18, 12, dir=1)
+    b.add("spiny", 34, 12, dir=1)
+    b.add("grrrol", 50, 12, dir=-1)
+    b.add("bowser", 57, 12, hp=5)         # 终盘 Boss（5 血）
+    b.add("checkpoint", 36, 12)
+    b.add("starcoin", 16, 8, idx=0)
+    b.row(42, 44, 9, "=")
+    b.add("starcoin", 43, 7, idx=1)
+    b.add("starcoin", 61, 8, idx=2)
+    b.add("flag", 62, 9)
+    return b.done(label="3-Castle", theme="sky", music="castle", time=340,
+                  player=dict(x=2, y=12, form="super"))
+
+
 LEVELS = {"1-1": level_1_1(), "1-2": level_1_2(), "1-3": level_1_3(),
           "1-castle": level_castle(), "1-1b": level_1_1b(),
-          "2-1": level_2_1(), "2-2": level_2_2(), "2-castle": level_2_castle()}
+          "2-1": level_2_1(), "2-2": level_2_2(), "2-castle": level_2_castle(),
+          "3-1": level_3_1(), "3-castle": level_3_castle()}
