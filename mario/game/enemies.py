@@ -180,7 +180,7 @@ class Enemy(Actor):
             return
         self._draw_shadow(target, cam)
         if self.squashed > 0:
-            # 压扁贴图：高度压到 40%
+            # 压扁贴图：高度压到 40%（压扁物直接贴脚底，不用精灵底检测）
             surf = self.frame_surf()
             flat = pygame.transform.scale(surf, (surf.get_width(),
                                                 max(2, int(surf.get_height() * 0.4))))

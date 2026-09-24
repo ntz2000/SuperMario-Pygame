@@ -43,12 +43,33 @@ class Actor:
         ——这就是"动作僵硬"的元凶）。"""
         return int(self.t * self.fps)
 
+    _bottom_cache: dict = {}     # class 级：asset 帧 → 精灵底部实体行号
+
     def frame_surf(self, anim: str | None = None) -> pygame.Surface:
         """Frames live under ``<art>.<anim>``; art with no per-state art falls back."""
         from ..engine.assets import registered_ids
         want, have = f"{self.art}.{anim or self.anim}", self.art
         asset = self.world.assets.sprite(want if want in registered_ids() else have)
         return asset.frame(self.frame)
+
+    def _sprite_bottom(self, surf) -> int:
+        """精灵在贴图内的最低实体行（用于贴地绘制，修"悬空"）。
+
+        抠图后的帧底部常有 1-2px 空边（GIF 切分的边距），按贴图高度
+        对齐会让脚浮起来。检测每帧实底并缓存。
+        """
+        key = id(surf)
+        b = self._bottom_cache.get(key)
+        if b is None:
+            import numpy as _np
+            import pygame as _pg
+            arr = _np.frombuffer(_pg.image.tobytes(surf, "RGBA"), dtype="uint8")
+            arr = arr.reshape(surf.get_height(), -1, 4)
+            rows = (arr[..., 3] > 60).any(axis=1)
+            nz = _np.where(rows)[0]
+            b = int(nz[-1]) if len(nz) else surf.get_height() - 1
+            self._bottom_cache[key] = b
+        return b
 
     def set_anim(self, name: str, reset: bool = True):
         if name != self.anim:
@@ -64,7 +85,10 @@ class Actor:
         surf = self.frame_surf()
         if self.flip:
             surf = pygame.transform.flip(surf, True, False)
-        x, y = cam.to_screen(self.body.x - surf.get_width() / 2, self.body.y - surf.get_height())
+        # 贴地绘制：精灵最低实体行对齐 body.y（修"悬空"——帧底常有空边）
+        bottom = self._sprite_bottom(surf)
+        x, y = cam.to_screen(self.body.x - surf.get_width() / 2,
+                             self.body.y - (bottom + 1))
         self._draw_shadow(target, cam)
         target.blit(surf, (x, y))
 

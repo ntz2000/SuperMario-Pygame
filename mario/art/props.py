@@ -100,19 +100,21 @@ def spiny(frame: int = 0):
 def coin(frame: int = 0, n=4):
     """Spinning coin: width follows cos of the spin phase.
 
-    正面帧加星形浮雕+顶部镜面高光（NSMB 的金币有强烈立体反光）。"""
-    c = Canvas((10, 14))
+    画布四周留 1px 边距——outline 的 dilate 在形状贴边时会把描边
+    推到画布边缘连成方框（金币黑框的历史 bug）。"""
+    c = Canvas((12, 16))
+    cx, cy = 6, 8
     w = 0.35 + 0.65 * abs(math.cos(2 * math.pi * frame / n))
-    c.ellipse((5 - 3.4 * w, 2, 5 + 3.4 * w, 13), YELLOW)
-    c.ellipse((5 - 2.0 * w, 4, 5 + 2.0 * w, 11), hexc("#fff0b0"))
-    if w > 0.8:      # 正面帧：星浮雕 + 顶部高光弧
+    c.ellipse((cx - 3.6 * w, cy - 5, cx + 3.6 * w, cy + 5), YELLOW)
+    c.ellipse((cx - 2.2 * w, cy - 3, cx + 2.2 * w, cy + 3), hexc("#fff0b0"))
+    if w > 0.8:      # 正面帧：星浮雕 + 顶部镜面高光
         pts = []
         for i in range(10):
             a2 = -math.pi / 2 + i * math.pi / 5
-            r = 2.6 * w if i % 2 == 0 else 1.1 * w
-            pts.append((5 + math.cos(a2) * r, 7.5 + math.sin(a2) * r))
+            r = 2.8 * w if i % 2 == 0 else 1.2 * w
+            pts.append((cx + math.cos(a2) * r, cy + math.sin(a2) * r))
         c.poly(pts, hexc("#f6c95c"))
-        c.ellipse((5 - 2.4 * w, 2.4, 5 + 2.4 * w, 4.2), hexc("#fffbe0"))
+        c.ellipse((cx - 2.6 * w, cy - 4.6, cx + 2.6 * w, cy - 2.8), hexc("#fffbe0"))
     return c
 
 
@@ -285,17 +287,19 @@ register("fx/coin", coin, frames=4, finish={"outline": 1.0})
 
 
 def bigcoin(frame: int = 0, n=4):
-    """NSMB 大金币（Star Coin）：更大的旋转金币 + 星形镂空。"""
-    c = Canvas((16, 22))
+    """NSMB 大金币（Star Coin）：更大的旋转金币 + 星形镂空。
+
+    画布留 1px 边距防 outline 方框（同 coin 的修复）。"""
+    c = Canvas((18, 24))
     w = 0.4 + 0.6 * abs(math.cos(2 * math.pi * frame / n))
-    cx = 8
-    c.ellipse((cx - 7 * w, 1, cx + 7 * w, 21), hexc("#f6c95c"))
-    c.ellipse((cx - 5 * w, 3, cx + 5 * w, 19), hexc("#ffe9a0"))
+    cx, cy = 9, 12
+    c.ellipse((cx - 7 * w, cy - 10, cx + 7 * w, cy + 10), hexc("#f6c95c"))
+    c.ellipse((cx - 5 * w, cy - 8, cx + 5 * w, cy + 8), hexc("#ffe9a0"))
     pts = []
     for i in range(10):
         a = -math.pi / 2 + i * math.pi / 5
         r = 5.5 * w if i % 2 == 0 else 2.4 * w
-        pts.append((cx + math.cos(a) * r, 11 + math.sin(a) * r))
+        pts.append((cx + math.cos(a) * r, cy + math.sin(a) * r))
     c.poly(pts, hexc("#f6c95c"))
     return c
 

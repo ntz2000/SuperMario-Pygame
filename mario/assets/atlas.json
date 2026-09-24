@@ -288,7 +288,8 @@
     17,
     19
    ]
-  ]
+  ],
+  "fit_h": 15
  },
  "enemy/koopa": {
   "sheet": "nsmbds_koopa_green.png",

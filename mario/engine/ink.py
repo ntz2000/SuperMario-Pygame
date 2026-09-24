@@ -160,6 +160,13 @@ class Canvas:
             arr[dark, :3] *= (1 - shade_edge)
 
         out = np.dstack([np.round(arr[..., :3]), np.round(arr[..., 3])]).astype(np.uint8)
+        # outline 时裁掉最外 1px：dilate 的描边若碰到画布边界会连成方框
+        # （金币/蘑菇的"黑框"）。裁边后形状完整、外框消失。
+        if outline > 0 and out.shape[0] > 4 and out.shape[1] > 4:
+            out[0, :, 3] = 0
+            out[-1, :, 3] = 0
+            out[:, 0, 3] = 0
+            out[:, -1, 3] = 0
         surf = pygame.image.frombuffer(out.tobytes(), (w, h), "RGBA")
         surf.set_colorkey(None)
         return surf
