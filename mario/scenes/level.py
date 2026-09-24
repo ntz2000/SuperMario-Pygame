@@ -751,11 +751,14 @@ class LevelScene(Scene):
 
     # -- 背景 / HUD ---------------------------------------------------------------------------
     def _sky(self, target):
+        """天空：垂直渐变 + 接近地平线时提亮（大气散射感）。"""
         top, bottom = hexc(self.theme.sky[0])[:3], hexc(self.theme.sky[1])[:3]
         w, h = self.app.base[0] * S, self.app.base[1] * S
         for y in range(0, h, 3 * S):
             t = y / max(1, h - 1)
-            row = tuple(round(a + (b - a) * t) for a, b in zip(top, bottom))
+            # smoothstep 缓动：中段变化快、地平线附近提亮
+            k = t * t * (3 - 2 * t)
+            row = tuple(round(a + (b - a) * k) for a, b in zip(top, bottom))
             pygame.draw.rect(target, row, pygame.Rect(0, y, w, 3 * S))
 
     def _decor(self, target):
@@ -856,11 +859,16 @@ class LevelScene(Scene):
             y -= surf.get_height() + 8 * S
 
     def _hud(self, target):
-        # 生命：小英雄头像 ×N（精灵天生 2x，直接 blit）
+        # HUD 面板底衬（半透明圆角条，图标文字更清晰）
+        bar = pygame.Surface((150 * S, 16 * S), pygame.SRCALPHA)
+        pygame.draw.rect(bar, (10, 12, 26, 110), bar.get_rect(), border_radius=6 * S)
+        target.blit(bar, (2 * S, 2 * S))
+        # 生命：马里奥头像 ×N（wiki 真实帧）
         hero = self.assets.sprite("hero.small.idle").frame(0)
-        target.blit(hero, (5 * S, 4 * S))
+        hs = pygame.transform.scale(hero, (hero.get_width() // 2, hero.get_height() // 2))
+        target.blit(hs, (5 * S, 4 * S))
         target.blit(self._hud_text("lives", f"x{self.lives}", (255, 255, 255)),
-                    (14 * S, 5 * S))
+                    (16 * S, 5 * S))
         # 金币：图标 ×N
         coin = self.assets.sprite("item/coin").frame(self.time * 0.15)
         target.blit(coin, (36 * S, 4 * S))

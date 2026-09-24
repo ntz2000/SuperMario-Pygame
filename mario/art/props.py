@@ -98,11 +98,21 @@ def spiny(frame: int = 0):
 
 
 def coin(frame: int = 0, n=4):
-    """Spinning coin: width follows cos of the spin phase."""
+    """Spinning coin: width follows cos of the spin phase.
+
+    正面帧加星形浮雕+顶部镜面高光（NSMB 的金币有强烈立体反光）。"""
     c = Canvas((10, 14))
     w = 0.35 + 0.65 * abs(math.cos(2 * math.pi * frame / n))
     c.ellipse((5 - 3.4 * w, 2, 5 + 3.4 * w, 13), YELLOW)
     c.ellipse((5 - 2.0 * w, 4, 5 + 2.0 * w, 11), hexc("#fff0b0"))
+    if w > 0.8:      # 正面帧：星浮雕 + 顶部高光弧
+        pts = []
+        for i in range(10):
+            a2 = -math.pi / 2 + i * math.pi / 5
+            r = 2.6 * w if i % 2 == 0 else 1.1 * w
+            pts.append((5 + math.cos(a2) * r, 7.5 + math.sin(a2) * r))
+        c.poly(pts, hexc("#f6c95c"))
+        c.ellipse((5 - 2.4 * w, 2.4, 5 + 2.4 * w, 4.2), hexc("#fffbe0"))
     return c
 
 
