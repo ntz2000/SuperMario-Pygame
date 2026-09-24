@@ -69,6 +69,26 @@ class TestLevelData:
         pipes = [o for o in objs if o["t"] == "pipe"]
         assert any("@" in o.get("to", "") for o in pipes), "隐藏房需要出口管道"
 
+    def test_starcoin_reachable_height(self):
+        """大金币可达性：每枚下方必须有平台且跳高 ≤5 格（满跳 5.3 格）。"""
+        for name, data in LEVELS.items():
+            if data.get("secret"):
+                continue
+            rows = data["rows"]
+            for o in data.get("objects", []):
+                if o["t"] != "starcoin":
+                    continue
+                gx, gy = o["x"], o["y"]
+                platform = None
+                for ty in range(gy + 1, len(rows)):
+                    if rows[ty][gx] in "GDIM=":
+                        platform = ty
+                        break
+                assert platform is not None, \
+                    f"{data.get('label')} 大金币#{o.get('idx')} @({gx},{gy}) 下方无平台"
+                assert platform - gy <= 5, \
+                    f"{data.get('label')} 大金币#{o.get('idx')} 需跳 {platform-gy} 格（>5 超出跳跃能力）"
+
     def test_warp_targets_exist(self):
         for name, data in LEVELS.items():
             for o in data.get("objects", []):

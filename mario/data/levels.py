@@ -119,7 +119,7 @@ def level_1_1() -> dict:
     b.add("red_koopa", 74, 12).add("piranha", 57, 9, phase=0.4)
     b.add("goomba", 90, 6)
     # 大金币 0/2（1 号在隐藏房）
-    b.add("starcoin", 31, 6, idx=0)
+    b.add("starcoin", 25, 9, idx=0)   # 单程平台上方（跳 3 格），不再悬坑上
     b.add("starcoin", 85, 5, idx=2)
     # 检查点 + 终点旗
     b.add("checkpoint", 48, 12)
@@ -157,7 +157,7 @@ def level_1_2() -> dict:
     b.row(54, 57, 5, "=")                  # 井口平台
     b.box(59, 5, 59, 12, "D")              # 左墙
     b.box(62, 6, 62, 12, "D")              # 右墙（顶面 row6，从井口平台可满跳越出）
-    b.add("starcoin", 61, 8, idx=1)
+    b.add("starcoin", 61, 9, idx=1)
     b.coins([60, 61], 11)
     b.put(10, 8, "!")                          # 火花块
     b.put(12, 6, "m")                          # 迷你蘑菇块
@@ -169,7 +169,7 @@ def level_1_2() -> dict:
     b.add("platform", 20, 10, to=(3, 0), period=3.2)   # 跨坑移动平台
     b.add("spring", 24, 12)                    # 弹簧垫
     b.add("starcoin", 12, 6, idx=0)
-    b.add("starcoin", 70, 7, idx=2)
+    b.add("starcoin", 70, 9, idx=2)
     b.add("checkpoint", 38, 12)
     b.add("flag", 72, 9)
     return b.done(label="1-2", theme="underground", music="underground", time=300,
@@ -201,8 +201,8 @@ def level_1_3() -> dict:
     b.put(55, 5, "f")   # 冰之花块
     b.put(21, 5, "Q")   # 企鹅装块（水关绝配）
     b.add("goombrat", 20, 9, dir=-1)           # NSMBW 栗子怪
-    b.add("starcoin", 24, 5, idx=0)            # 水下高处
-    b.add("starcoin", 48, 5, idx=1)
+    b.add("starcoin", 24, 8, idx=0)            # 平台上方 2 格
+    b.add("starcoin", 48, 8, idx=1)
     b.add("starcoin", 76, 5, idx=2)
     b.add("checkpoint", 33, 8)
     b.add("flag", 80, 8)
@@ -215,8 +215,8 @@ def level_castle() -> dict:
     b = Builder(68)
     b.box(0, 0, 67, 2, "M")
     b.floor(0, 67, top=13, code="D")
-    b.gap(24, 27)
-    b.box(24, 14, 27, 14, "S")                 # 坑底尖刺（掉进去就完）
+    b.gap(24, 26)
+    b.box(24, 14, 26, 14, "S")                 # 坑底尖刺（3 格坑：跑跳可达，平台可选）
     b.put(8, 9, "!")
     b.put(45, 8, "g")                          # 巨大蘑菇块（配合砖排拆迁）
     b.box(16, 9, 19, 9, "B")
@@ -232,9 +232,10 @@ def level_castle() -> dict:
     b.add("goomba", 12, 12).add("goomba", 13, 12)
     b.add("bowser", 58, 12)                    # Boss
     b.add("checkpoint", 36, 12)
-    b.add("starcoin", 16, 4, idx=0)
-    b.add("starcoin", 41, 5, idx=1)
-    b.add("starcoin", 62, 4, idx=2)
+    b.add("starcoin", 16, 8, idx=0)
+    b.row(40, 42, 9, "=")
+    b.add("starcoin", 41, 7, idx=1)
+    b.add("starcoin", 62, 8, idx=2)
     b.add("flag", 64, 9)                      # 备用终点（Boss 被击破也算过关）
     return b.done(label="1-Castle", theme="castle", music="castle", time=300,
                   player=dict(x=2, y=12, form="super"))
@@ -251,6 +252,7 @@ def level_2_1() -> dict:
     b.box(64, 13, 72, 14, "I")
     b.stairs(84, 12, 4, up=True)
     b.floor(84, 95)
+    b.put(88, 8, "D")            # 楼梯顶垫 1 格（4 格墙 → 3+1 缓步）
     # 方块
     b.put(12, 9, "?").put(13, 9, "Q")        # 企鹅装块
     b.put(38, 9, "!")                        # 火花
@@ -263,8 +265,9 @@ def level_2_1() -> dict:
     b.add("goombrat", 34, 12).add("goomba", 42, 12)
     b.add("biddybud", 50, 12, dir=1).add("goombrat", 68, 12, dir=1)
     b.add("koopa", 78, 12, dir=1)
-    b.add("starcoin", 31, 6, idx=0)
-    b.add("starcoin", 59, 5, idx=1)
+    b.add("starcoin", 25, 9, idx=0)   # 单程平台上方（跳 3 格），不再悬坑上
+    b.row(58, 59, 9, "=")
+    b.add("starcoin", 59, 7, idx=1)
     b.add("starcoin", 88, 5, idx=2)
     b.add("checkpoint", 46, 12)
     b.add("flag", 92, 9)
@@ -297,7 +300,7 @@ def level_2_2() -> dict:
     b.add("spiny", 58, 12, dir=1)
     b.add("starcoin", 16, 7, idx=0)
     b.add("starcoin", 66, 8, idx=1)
-    b.add("starcoin", 74, 5, idx=2)
+    b.add("starcoin", 74, 9, idx=2)
     b.add("checkpoint", 38, 12)
     b.add("flag", 76, 9)
     return b.done(label="2-2", theme="snow", music="underground", time=300,
@@ -323,9 +326,9 @@ def level_2_castle() -> dict:
     b.add("spiny", 30, 12, dir=1)
     b.add("bowser", 60, 12, hp=4)            # Boss（4 血）
     b.add("checkpoint", 36, 12)
-    b.add("starcoin", 17, 4, idx=0)
+    b.add("starcoin", 17, 8, idx=0)
     b.add("starcoin", 42, 5, idx=1)
-    b.add("starcoin", 64, 4, idx=2)
+    b.add("starcoin", 64, 8, idx=2)
     b.add("flag", 66, 9)
     return b.done(label="2-Castle", theme="castle", music="castle", time=320,
                   player=dict(x=2, y=12, form="super"))
