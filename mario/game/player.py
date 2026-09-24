@@ -238,6 +238,10 @@ class Player(Actor):
         if b.on_ground and abs(b.vx) > TUNE.walk_max and not self.locked:
             if int(self.t * 30) % 5 == 0:
                 world.fx("dust", (b.x - b.facing * 3, b.y - 1))
+        # 无敌星彩虹尾迹（NSMB 星星跑动时身后拖彩色光点）
+        if self.star > 0 and abs(b.vx) > 0.8:
+            if int(self.t * 40) % 2 == 0:
+                world.fx("sparkle", (b.x - b.facing * 6, b.y - b.h * 0.5))
         if contact.ceiling:
             world.on_ceiling(self, contact.ceiling[0])
         if not self.locked:
@@ -472,12 +476,17 @@ class Player(Actor):
         if self.dying:
             surf = pygame.transform.flip(surf, False, True)
         elif self.star > 0 and not self.spinning:
-            # 星星无敌：循环色彩叠加
+            # 星星无敌：循环色彩叠加 + 亮度脉冲（NSMB 闪闪发光感）
             tint = STAR_TINTS[int(self.t * 18) % len(STAR_TINTS)]
             surf = surf.copy()
             veil = pygame.Surface(surf.get_size(), pygame.SRCALPHA)
             veil.fill(tint + (110,))
             surf.blit(veil, (0, 0), special_flags=pygame.BLEND_RGBA_ADD)
+            pulse = int(40 * abs(math.sin(self.t * 9.0)))
+            if pulse > 12:
+                glow = pygame.Surface(surf.get_size(), pygame.SRCALPHA)
+                glow.fill((255, 255, 255, pulse))
+                surf.blit(glow, (0, 0), special_flags=pygame.BLEND_RGBA_ADD)
         if self.flip:
             surf = pygame.transform.flip(surf, True, False)
         # squash & stretch：落地压扁（宽+高-），起跳拉伸（宽-高+）

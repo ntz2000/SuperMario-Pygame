@@ -742,6 +742,8 @@ class LevelScene(Scene):
             target.blit(surf, (x, y))
         if getattr(self.theme, "name", "") == "snow":
             self._snowfall(target)
+        elif self.data.get("theme") == "water":
+            self._bubbles(target)
         self._hud(target)
         self._hints(target)
         if self.phase == "win" and self.phase_t > 1.2:
@@ -829,6 +831,16 @@ class LevelScene(Scene):
             alpha = 200 if i % 5 == 0 else 140
             pygame.draw.circle(target, (255, 255, 255, alpha),
                                (int(sx), sy), r)
+
+    def _bubbles(self, target):
+        """水关氛围：上升气泡（确定性伪随机，贴镜头视差）。"""
+        w, h = target.get_size()
+        ox = self.camera.pos[0]
+        for i in range(22):
+            bx = (i * 89 + ox * 0.6 + (i * i % 5) * 13) % w
+            by = (h + 40 - int((i * 61 + self.time * (0.8 + (i % 4) * 0.5)) * S)) % (h + 80) - 20
+            r = 2 * S if i % 4 == 0 else S
+            pygame.draw.circle(target, (210, 235, 255, 90), (int(bx), int(by)), r, 1)
 
     def _hud_text(self, key, text, color):
         """文本只在内容变化时重渲染。"""

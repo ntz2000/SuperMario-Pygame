@@ -425,6 +425,9 @@ class Fireball(Actor):
         if self.life <= 0:
             self.kill()
             return
+        if int(self.t * 60) % 3 == 0:      # 尾迹粒子
+            world.fx("sparkle" if getattr(self, "freezes", False) else "hit",
+                     self.body.center)
         if move_x(self.body, world.tilemap):
             self.kill()
             world.fx("pop", self.body.center)
