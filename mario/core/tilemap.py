@@ -168,13 +168,14 @@ class TileMap:
                 else:
                     surf.blit(art, ((tx * TILE - index * CHUNK * TILE) * RES_SCALE,
                                     (ty * TILE + dy) * RES_SCALE))
-                # NSMB 光照：top 变体加 1px 顶部高光；深埋 fill 逐层压暗（AO 感）
+                # NSMB 光照：top 变体 2px 渐变受光面（顶行 80 → 次行 36）
                 if variant == "top" and tile.kind:
-                    hl = pygame.Surface((TILE * RES_SCALE, RES_SCALE),
-                                        pygame.SRCALPHA)
-                    hl.fill((255, 255, 240, 60))
-                    surf.blit(hl, ((tx * TILE - index * CHUNK * TILE) * RES_SCALE,
-                                   (ty * TILE + dy) * RES_SCALE))
+                    for hl_i, hl_a in ((0, 80), (1, 36)):
+                        hl = pygame.Surface((TILE * RES_SCALE, RES_SCALE),
+                                            pygame.SRCALPHA)
+                        hl.fill((255, 252, 235, hl_a))
+                        surf.blit(hl, ((tx * TILE - index * CHUNK * TILE) * RES_SCALE,
+                                       (ty * TILE + dy) * RES_SCALE + hl_i * RES_SCALE))
                 elif variant == "fill" and tile.kind:
                     depth = 0
                     yy = ty - 1

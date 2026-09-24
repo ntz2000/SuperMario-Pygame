@@ -119,7 +119,9 @@ def _pipe(variant: str) -> Canvas:
     c = Canvas((16, 16))
     cap = variant == "cap"
     c.rrect((1, 0 if cap else 1, 15, 16), 4 if cap else 1, hexc("#2aa04a"))
-    c.rect((3, 0 if cap else 2, 5, 13), hexc("#7fe28a"))
+    # 竖向双高光带（左强右弱=立体圆柱感）
+    c.rect((3, 0 if cap else 2, 4.6, 13), hexc("#8fef9a"))
+    c.rect((12.4, 0 if cap else 2, 13.4, 13), hexc("#57c868"))
     if variant in ("cap", "top"):
         c.rect((1, 1, 15, 3), hexc("#63e07a"))
     return c
