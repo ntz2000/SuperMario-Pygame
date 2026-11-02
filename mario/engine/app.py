@@ -28,7 +28,8 @@ class App:
     def __init__(self, title="Super Mario", base=(384, 216), scale=3, headless=None,
                  input=None, enable_cache: bool = True, res_scale: int = RES_SCALE):
         if headless is None:
-            headless = not os.environ.get("DISPLAY") and "SDL_VIDEODRIVER" not in os.environ
+            headless = (os.name != "nt" and not os.environ.get("DISPLAY")
+                        and "SDL_VIDEODRIVER" not in os.environ)
         self.headless = headless
         if headless:
             os.environ.setdefault("SDL_VIDEODRIVER", "dummy")

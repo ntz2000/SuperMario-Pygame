@@ -2,10 +2,29 @@
 from __future__ import annotations
 
 import pygame
+import os
+import pytest
 
 from mario.engine.camera import Camera
 from mario.engine.input import Input
 from mario.engine.assets import Assets, UnknownAsset
+
+
+class TestAppStartup:
+    @pytest.mark.skipif(os.name != "nt", reason="Windows display detection")
+    def test_windows_without_display_uses_window_mode(self, monkeypatch):
+        from mario.engine.app import App
+
+        monkeypatch.delenv("DISPLAY", raising=False)
+        monkeypatch.delenv("SDL_VIDEODRIVER", raising=False)
+        app = App(base=(32, 18), scale=1, enable_cache=False)
+        assert app.headless is False
+
+    def test_explicit_headless_remains_available(self):
+        from mario.engine.app import App
+
+        app = App(base=(32, 18), scale=1, headless=True, enable_cache=False)
+        assert app.headless is True
 
 
 class TestCamera:

@@ -21,7 +21,7 @@ _ATLAS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "atlas.js
 
 def _load_atlas() -> dict:
     try:
-        with open(_ATLAS_PATH) as fh:
+        with open(_ATLAS_PATH, encoding="utf-8") as fh:
             return json.load(fh)
     except (OSError, ValueError):
         return {}

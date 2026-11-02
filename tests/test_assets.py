@@ -12,6 +12,19 @@ def new_assets():
     return Assets(enable_cache=False)
 
 
+def test_atlas_loads_with_gbk_system_default(monkeypatch):
+    from mario.assets import atlas
+
+    def locale_open(path, **kwargs):
+        kwargs.setdefault("encoding", "gbk")
+        return open(path, **kwargs)
+
+    monkeypatch.setattr(atlas, "open", locale_open, raising=False)
+    entries = atlas._load_atlas()
+    assert "deco/grass" in entries
+    assert "enemy/biddybud" in entries
+
+
 class TestTileArt:
     """方块表里的每个 art 前缀 × 三种变体都能生成。"""
 
